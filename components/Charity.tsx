@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Globe, Heart, MapPin, MessageCircle, UserPlus, Sprout, Check, X, Gift, Search, Filter, Loader2 } from 'lucide-react';
 import { CreateEventModal, NewEventData } from './CreateEventModal';
 import { CharityEvent } from '../types';
+import { BaseCard, CardMedia, CardBody, CardFooter, CardLabel } from './BaseCard';
 
 interface CharityProps {
   notify: (msg: string, type: 'success' | 'error' | 'info') => void;
@@ -39,14 +40,14 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
     <div className="space-y-8 animate-fade-in relative">
       <div className="relative rounded-[3rem] overflow-hidden bg-gradient-to-r from-[#1a2e05] to-[#0f1a03] border border-[#2f400f] min-h-[350px] flex flex-col md:flex-row items-center p-12 gap-12 shadow-2xl">
         <div className="relative z-10 flex-1">
-          <span className="bg-emerald-500/20 text-emerald-400 px-4 py-1.5 rounded-xl text-xs font-bold border border-emerald-500/20 uppercase tracking-widest mb-4 inline-block">Civil Mob</span>
+          <CardLabel color="emerald" className="mb-4 inline-block">Civil Mob</CardLabel>
           <h1 className="text-5xl font-black text-white mb-4 tracking-tighter">Civic Action Hub</h1>
           <p className="text-xl text-green-200/70 mb-8 max-w-xl">Rejoignez des campagnes de quartier ou lancez votre propre mouvement solidaire.</p>
           <div className="flex flex-wrap gap-4">
-            <button onClick={() => setIsCreateModalOpen(true)} className="bg-white text-green-900 px-8 py-4 rounded-3xl font-black uppercase tracking-widest flex items-center gap-2 hover:scale-105 transition-all shadow-xl shadow-green-900/40">
+            <button onClick={() => setIsCreateModalOpen(true)} className="bg-white text-green-900 px-8 py-4 rounded-[2rem] font-black uppercase tracking-widest flex items-center gap-2 hover:scale-105 transition-all shadow-xl shadow-green-900/40">
               <Plus className="w-5 h-5" /> Créer un Événement
             </button>
-            <button onClick={() => setIsScraping(!isScraping)} className="bg-green-950/50 border border-green-800/50 text-green-200 px-8 py-4 rounded-3xl font-black uppercase tracking-widest flex items-center gap-2 backdrop-blur-md transition-all">
+            <button onClick={() => setIsScraping(!isScraping)} className="bg-green-950/50 border border-green-800/50 text-green-200 px-8 py-4 rounded-[2rem] font-black uppercase tracking-widest flex items-center gap-2 backdrop-blur-md transition-all">
               {isScraping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />} Live Sync
             </button>
           </div>
@@ -60,22 +61,24 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
           const progress = Math.min(100, Math.round((event.joined / event.goal) * 100));
           
           return (
-            <div key={event.id} className="bg-[#13151b] border border-[#2a2e37] rounded-3xl overflow-hidden group hover:border-[#3f4552] transition-all flex flex-col shadow-lg hover:shadow-2xl">
-              <div className="h-48 flex items-center justify-center bg-gradient-to-b from-[#181b21] to-[#13151b] relative">
-                <div className={`w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl border ${event.category === 'Environment' ? 'bg-green-500/20 border-green-500/30 text-green-500' : 'bg-pink-500/20 border-pink-500/30 text-pink-500'}`}>
+            <BaseCard key={event.id}>
+              <CardMedia className="flex items-center justify-center bg-gradient-to-b from-[#181b21] to-[#13151b]">
+                <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center shadow-2xl border ${event.category === 'Environment' ? 'bg-green-500/20 border-green-500/30 text-green-500' : 'bg-pink-500/20 border-pink-500/30 text-pink-500'}`}>
                   {event.category === 'Environment' ? <Sprout className="w-10 h-10" /> : <Gift className="w-10 h-10" />}
                 </div>
                 <div className="absolute top-4 right-4">
-                  <button onClick={() => setLikedEvents(prev => prev.includes(event.id) ? prev.filter(id => id !== event.id) : [...prev, event.id])} className={`p-2 rounded-xl backdrop-blur-md border border-white/5 transition-all ${isLiked ? 'bg-red-500 text-white' : 'bg-black/40 text-white hover:bg-black/60'}`}>
+                  <button onClick={() => setJoinedEvents(prev => prev.includes(event.id) ? prev : [...prev, event.id])} className={`p-2 rounded-xl backdrop-blur-md border border-white/5 transition-all ${isLiked ? 'bg-red-500 text-white' : 'bg-black/40 text-white hover:bg-black/60'}`}>
                     <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
                   </button>
                 </div>
-                <span className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md border border-white/10 text-gray-300 text-[10px] font-bold px-3 py-1 rounded-xl uppercase tracking-widest">{event.category}</span>
-              </div>
+                <CardLabel color="gray" className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md border-white/10">
+                  {event.category}
+                </CardLabel>
+              </CardMedia>
 
-              <div className="p-6 flex flex-col flex-1">
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-green-400 transition-colors leading-tight">{event.title}</h3>
-                <div className="flex items-center text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-6">
+              <CardBody>
+                <h3 className="text-xl font-black text-white mb-2 group-hover:text-green-400 transition-colors leading-tight">{event.title}</h3>
+                <div className="flex items-center text-[10px] font-black uppercase tracking-widest text-gray-500 mb-6">
                   <MapPin className="w-3 h-3 mr-1 text-green-500" /> {event.location}
                 </div>
 
@@ -89,10 +92,10 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
                   </div>
                 </div>
 
-                <div className="mt-auto pt-4 border-t border-[#2a2e37]/50 flex items-center justify-between gap-3">
+                <CardFooter>
                   <button 
                     onClick={() => handleJoinToggle(event.id)}
-                    className={`flex-1 py-3 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${isJoined ? 'bg-red-500/20 text-red-400 border border-red-500/20' : 'bg-green-600 text-white shadow-xl shadow-green-900/20'}`}
+                    className={`flex-1 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${isJoined ? 'bg-red-500/20 text-red-400 border border-red-500/20' : 'bg-green-600 text-white shadow-xl shadow-green-900/20'}`}
                   >
                     {isJoined ? <X className="w-3 h-3" /> : <UserPlus className="w-3 h-3" />} {isJoined ? 'Annuler' : 'Rejoindre'}
                   </button>
@@ -102,33 +105,12 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
                   >
                     <MessageCircle className="w-4 h-4" />
                   </button>
-                </div>
-              </div>
-            </div>
+                </CardFooter>
+              </CardBody>
+            </BaseCard>
           );
         })}
       </div>
-      
-      <CreateEventModal 
-         isOpen={isCreateModalOpen}
-         onClose={() => setIsCreateModalOpen(false)}
-         onSubmit={(data) => {
-            const newEvent: CharityEvent = {
-              id: `event-${Date.now()}`,
-              title: data.title,
-              location: data.location,
-              joined: 1,
-              goal: data.maxParticipants,
-              progress: Math.round((1/data.maxParticipants)*100),
-              category: 'Environment'
-            };
-            setEvents(prev => [newEvent, ...prev]);
-            setJoinedEvents(prev => [...prev, newEvent.id]);
-            setIsCreateModalOpen(false);
-            notify('Event created successfully!', 'success');
-         }}
-      />
-
     </div>
   );
 };

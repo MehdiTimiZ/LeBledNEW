@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Header } from './components/Header';
 import { CategoryNav } from './components/CategoryNav';
@@ -89,19 +90,28 @@ const App: React.FC = () => {
   };
 
   const handleContact = (recipient: string = "Seller", initialMsg: string = "") => {
+    if (!currentUser) {
+      notify('Please log in to contact sellers', 'info');
+      setIsAuthModalOpen(true);
+      return;
+    }
     setContactRecipient(recipient);
     setContactMessage(initialMsg);
     setIsContactModalOpen(true);
   };
 
   const handleBook = (itemName?: string) => {
+    if (!currentUser) {
+      notify('Please log in to book services', 'info');
+      setIsAuthModalOpen(true);
+      return;
+    }
     setBookingItemName(itemName || "Service");
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
     setCurrentView(AppView.HOME);
-    setIsAuthModalOpen(true); // Redirect to login modal
     notify('Logged out successfully', 'info');
   };
 
@@ -154,6 +164,11 @@ const App: React.FC = () => {
   };
 
   const openCreateListing = (category: string = 'Vehicles') => {
+    if (!currentUser) {
+      notify('Please log in to post an ad', 'info');
+      setIsAuthModalOpen(true);
+      return;
+    }
     setInitialCategory(category);
     setIsCreateModalOpen(true);
   };

@@ -16,7 +16,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, currentUser, onLogout, language = 'FR', isOpen, onClose }) => {
   const t = TRANSLATIONS[language]?.menu || TRANSLATIONS['FR'].menu;
 
-  const navItems = [
+  const mainNavItems = [
     { id: AppView.HOME, label: t.HOME, icon: Home },
     { id: AppView.VEHICLES, label: t.VEHICLES, icon: Car },
     { id: AppView.COMMUNITY, label: t.COMMUNITY, icon: Users },
@@ -26,11 +26,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
     { id: AppView.FLEXY, label: t.FLEXY, icon: Smartphone },
     { id: AppView.CHAT, label: t.CHAT, icon: MessageCircle },
   ];
-
-  const handleItemClick = (view: AppView) => {
-    onChangeView(view);
-    if (window.innerWidth < 1024) onClose?.();
-  };
 
   return (
     <>
@@ -63,15 +58,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
           )}
         </div>
 
-        {/* Unified Navigation List */}
-        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto no-scrollbar">
-          {navItems.map((item) => {
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto no-scrollbar">
+          {isOpen && <p className="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4 animate-fade-in">Menu</p>}
+          
+          {mainNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
             return (
               <button
                 key={item.id}
-                onClick={() => handleItemClick(item.id)}
+                onClick={() => {
+                  onChangeView(item.id);
+                  if (window.innerWidth < 1024) onClose?.();
+                }}
                 title={!isOpen ? item.label : undefined}
                 className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden
                   ${isOpen ? 'space-x-3' : 'justify-center'}
@@ -87,50 +87,63 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
             );
           })}
 
-          {/* Role Based & Settings Fused */}
-          {currentUser && currentUser.role === 'admin' && (
-            <button
-              onClick={() => handleItemClick(AppView.ADMIN_PANEL)}
-              title={!isOpen ? t.ADMIN_PANEL : undefined}
-              className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-300 group overflow-hidden
-                ${isOpen ? 'space-x-3' : 'justify-center'}
-                ${currentView === AppView.ADMIN_PANEL
-                  ? 'bg-red-900/30 text-red-400 border border-red-500/30'
-                  : 'text-gray-400 hover:bg-[#181b21] hover:text-red-400'
-                }`}
-            >
-              <ShieldAlert className="w-5 h-5 shrink-0" />
-              {isOpen && <span className="font-medium animate-fade-in whitespace-nowrap overflow-hidden">{t.ADMIN_PANEL}</span>}
-            </button>
+          {/* Role Based Section */}
+          {currentUser && (
+            <div className={`pt-4 border-t border-[#2a2e37] space-y-2 ${isOpen ? 'mt-6' : 'mt-4'}`}>
+              {currentUser.role === 'admin' && (
+                <button
+                  onClick={() => {
+                    onChangeView(AppView.ADMIN_PANEL);
+                    if (window.innerWidth < 1024) onClose?.();
+                  }}
+                  title={!isOpen ? t.ADMIN_PANEL : undefined}
+                  className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-300 group overflow-hidden
+                    ${isOpen ? 'space-x-3' : 'justify-center'}
+                    ${currentView === AppView.ADMIN_PANEL
+                      ? 'bg-red-900/30 text-red-400 border border-red-500/30'
+                      : 'text-gray-400 hover:bg-[#181b21] hover:text-red-400'
+                    }`}
+                >
+                  <ShieldAlert className="w-5 h-5 shrink-0" />
+                  {isOpen && <span className="font-medium animate-fade-in whitespace-nowrap overflow-hidden">{t.ADMIN_PANEL}</span>}
+                </button>
+              )}
+              {['admin', 'seller'].includes(currentUser.role) && (
+                <button
+                  onClick={() => {
+                    onChangeView(AppView.SELLER_DASHBOARD);
+                    if (window.innerWidth < 1024) onClose?.();
+                  }}
+                  title={!isOpen ? t.SELLER_DASHBOARD : undefined}
+                  className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-300 group overflow-hidden
+                    ${isOpen ? 'space-x-3' : 'justify-center'}
+                    ${currentView === AppView.SELLER_DASHBOARD
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-gray-400 hover:bg-[#181b21] hover:text-white'
+                    }`}
+                >
+                  <LayoutDashboard className="w-5 h-5 shrink-0" />
+                  {isOpen && <span className="font-medium animate-fade-in whitespace-nowrap overflow-hidden">{t.SELLER_DASHBOARD}</span>}
+                </button>
+              )}
+            </div>
           )}
+        </nav>
 
-          {currentUser && ['admin', 'seller'].includes(currentUser.role) && (
-            <button
-              onClick={() => handleItemClick(AppView.SELLER_DASHBOARD)}
-              title={!isOpen ? t.SELLER_DASHBOARD : undefined}
-              className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-300 group overflow-hidden
-                ${isOpen ? 'space-x-3' : 'justify-center'}
-                ${currentView === AppView.SELLER_DASHBOARD
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-gray-400 hover:bg-[#181b21] hover:text-white'
-                }`}
-            >
-              <LayoutDashboard className="w-5 h-5 shrink-0" />
-              {isOpen && <span className="font-medium animate-fade-in whitespace-nowrap overflow-hidden">{t.SELLER_DASHBOARD}</span>}
-            </button>
-          )}
-
+        {/* Footer */}
+        <div className="p-3 border-t border-[#2a2e37] bg-[#0f1117] space-y-1 shrink-0">
           <button 
-             onClick={() => handleItemClick(AppView.PROFILE)}
+             onClick={() => {
+               onChangeView(AppView.PROFILE);
+               if (window.innerWidth < 1024) onClose?.();
+             }}
              title={!isOpen ? t.PROFILE : undefined}
              className={`w-full flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-[#181b21] rounded-xl transition-colors
-               ${isOpen ? 'space-x-3' : 'justify-center'}
-               ${currentView === AppView.PROFILE ? 'bg-[#181b21] text-white' : ''}`}
+               ${isOpen ? 'space-x-3' : 'justify-center'}`}
           >
             <Settings className="w-5 h-5 shrink-0" />
             {isOpen && <span className="font-medium animate-fade-in whitespace-nowrap overflow-hidden">{t.PROFILE}</span>}
           </button>
-          
           {currentUser && (
             <button 
               onClick={onLogout}
@@ -142,7 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
               {isOpen && <span className="font-medium animate-fade-in whitespace-nowrap overflow-hidden">{t.LOGOUT}</span>}
             </button>
           )}
-        </nav>
+        </div>
       </div>
     </>
   );
