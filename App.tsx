@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Header } from './components/Header';
 import { CategoryNav } from './components/CategoryNav';
 import { Sidebar } from './components/Sidebar';
@@ -29,19 +29,21 @@ import { CHARITY_EVENTS } from './constants';
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>(AppView.HOME);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [initialCategory, setInitialCategory] = useState<string>('Vehicles');
-  const [language, setLanguage] = useState<'FR' | 'EN' | 'AR'>('FR');
+  const [language, setLanguage] = useState<'FR' | 'EN'>('FR');
   
   // Auth State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>({
     id: 'u1',
     name: 'Amine Khelifi',
     email: 'amine@test.com',
-    role: 'user', // Default mock user
+    role: 'user', 
     isVerified: true
   });
+  const [viewedProfile, setViewedProfile] = useState<UserProfile | null>(null); 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // New Global State for Interactivity
@@ -50,10 +52,37 @@ const App: React.FC = () => {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [contactRecipient, setContactRecipient] = useState("Seller");
   const [contactMessage, setContactMessage] = useState("");
-  const [unreadCount, setUnreadCount] = useState(2); // Initial unread messages
+  const [unreadCount, setUnreadCount] = useState(2); 
 
   // Lifted State for Persistence
   const [charityEvents, setCharityEvents] = useState<CharityEvent[]>(CHARITY_EVENTS);
+
+  // Refs for click outside handling
+  const chatRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      
+      // Handle Chat Click Outside
+      if (chatRef.current && !chatRef.current.contains(event.target as Node) && isChatOpen) {
+        if (!target.closest('button[data-chat-toggle="true"]')) {
+           setIsChatOpen(false);
+        }
+      }
+
+      // Handle Sidebar Click Outside (only if open/expanded)
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node) && isSidebarOpen) {
+        if (!target.closest('button[data-sidebar-toggle="true"]')) {
+          setIsSidebarOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isChatOpen, isSidebarOpen]);
 
   const notify = (message: string, type: ToastType = 'info') => {
     setToast({ message, type });
@@ -72,11 +101,11 @@ const App: React.FC = () => {
   const handleLogout = () => {
     setCurrentUser(null);
     setCurrentView(AppView.HOME);
+    setIsAuthModalOpen(true); // Redirect to login modal
     notify('Logged out successfully', 'info');
   };
 
   const handleLogin = (role: UserRole) => {
-    // Mock User Data based on role choice
     let user: UserProfile;
     if (role === 'admin') {
       user = { id: 'admin1', name: 'Super Admin', email: 'admin@lebled.dz', role: 'admin', isVerified: true };
@@ -101,26 +130,46 @@ const App: React.FC = () => {
   };
 
   const handleViewChange = (view: AppView) => {
-    // Basic protection for Admin Panel
     if (view === AppView.ADMIN_PANEL && currentUser?.role !== 'admin') {
       notify('Access Denied: Super User privileges required.', 'error');
       return;
     }
-    // Protection for Seller Dashboard
     if (view === AppView.SELLER_DASHBOARD && currentUser?.role !== 'seller' && currentUser?.role !== 'admin') {
       notify('Access Denied: Seller privileges required.', 'error');
       return;
     }
     
+    if (view !== AppView.PROFILE) {
+        setViewedProfile(null);
+    }
+    
     setCurrentView(view);
     if (view === AppView.CHAT) {
-      setUnreadCount(0); // Reset unread count when opening chat
+      setUnreadCount(0);
+    }
+    // Collapse sidebar on small screens after navigation
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
     }
   };
 
   const openCreateListing = (category: string = 'Vehicles') => {
     setInitialCategory(category);
     setIsCreateModalOpen(true);
+  };
+
+  const handleViewOtherProfile = (name: string) => {
+    const mockProfile: UserProfile = {
+      id: 'other-user',
+      name: name,
+      email: 'contact@user.com',
+      role: 'seller',
+      isVerified: true,
+      avatar: `https://picsum.photos/200/200?seed=${name}`,
+      cover: `https://picsum.photos/1200/400?seed=${name}`
+    };
+    setViewedProfile(mockProfile);
+    setCurrentView(AppView.PROFILE);
   };
 
   const renderView = () => {
@@ -140,9 +189,17 @@ const App: React.FC = () => {
       case AppView.SUBSCRIPTION:
         return <SubscriptionView />;
       case AppView.PROFILE:
-        return <Profile onEdit={() => setIsProfileModalOpen(true)} onContact={handleContact} currentUser={currentUser} onClose={() => setCurrentView(AppView.HOME)} />;
+        return <Profile 
+          onEdit={!viewedProfile ? () => setIsProfileModalOpen(true) : undefined} 
+          onContact={handleContact} 
+          currentUser={viewedProfile || currentUser} 
+          onClose={() => {
+              setViewedProfile(null);
+              setCurrentView(AppView.HOME);
+          }} 
+        />;
       case AppView.SERVICES:
-        return <MedicalServices notify={notify} onBook={handleBook} onOpenCreate={() => openCreateListing('Medical Services')} />;
+        return <MedicalServices notify={notify} onBook={handleBook} onOpenCreate={() => openCreateListing('Medical Services')} language={language} />;
       case AppView.DELIVERY:
         return <DeliveryMoving notify={notify} onContact={handleContact} />;
       case AppView.FLEXY:
@@ -155,6 +212,7 @@ const App: React.FC = () => {
               onContact={(recipient) => handleContact(recipient)} 
               onBook={() => handleBook("Vehicle Listing")}
               language={language}
+              onViewProfile={handleViewOtherProfile}
             />
           </div>
         );
@@ -168,19 +226,23 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`flex h-screen bg-[#0f1117] text-gray-100 font-sans selection:bg-indigo-500/30 overflow-hidden ${language === 'AR' ? 'dir-rtl' : 'dir-ltr'}`}>
+    <div className="flex h-screen bg-[#0f1117] text-gray-100 font-sans selection:bg-indigo-500/30 overflow-hidden">
       
-      {/* Desktop Sidebar */}
-      <Sidebar 
-        currentView={currentView} 
-        onChangeView={handleViewChange} 
-        currentUser={currentUser}
-        onLogout={handleLogout}
-        language={language}
-      />
+      {/* Sidebar - Mini icons are persistent, expanded grows to overlay/push */}
+      <div ref={sidebarRef}>
+        <Sidebar 
+          currentView={currentView} 
+          onChangeView={handleViewChange} 
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          language={language}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+      </div>
 
-      {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col h-full overflow-hidden relative transition-all ${language === 'AR' ? 'md:pr-72' : 'md:pl-72'}`}>
+      {/* Main Content Area - Content slides when sidebar expands */}
+      <div className={`flex-1 flex flex-col h-full overflow-hidden relative transition-all duration-500 ${isSidebarOpen ? 'md:pl-[280px]' : 'md:pl-20'}`}>
         
         <Header 
           onChangeView={handleViewChange} 
@@ -191,10 +253,10 @@ const App: React.FC = () => {
           unreadCount={unreadCount}
           language={language}
           setLanguage={setLanguage}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
         
         <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pb-24 md:pb-8 pt-6 scroll-smooth">
-          {/* Mobile Category Nav (Hidden on Desktop) */}
           <CategoryNav currentView={currentView} onChangeView={handleViewChange} />
           
           <div className="mt-2 md:mt-6">
@@ -202,10 +264,11 @@ const App: React.FC = () => {
           </div>
         </main>
 
-        {/* Floating Chat Button (Desktop Only) */}
+        {/* Floating Chat Button */}
         {currentView !== AppView.CHAT && (
-          <div className={`hidden md:block fixed bottom-8 z-40 ${language === 'AR' ? 'left-8' : 'right-8'}`}>
+          <div className={`hidden md:block fixed bottom-8 z-40 right-8`}>
             <button 
+              data-chat-toggle="true"
               onClick={() => setIsChatOpen(!isChatOpen)}
               className="bg-[#6366f1] hover:bg-[#4f46e5] text-white p-4 rounded-full shadow-2xl shadow-indigo-500/30 transition-all hover:scale-105 active:scale-95 relative"
             >
@@ -220,9 +283,9 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* AI Chat Overlay (Desktop) */}
+        {/* AI Chat Overlay */}
         {isChatOpen && currentView !== AppView.CHAT && (
-          <div className={`fixed bottom-24 w-96 z-40 animate-fade-in-up hidden md:block ${language === 'AR' ? 'left-8' : 'right-8'}`}>
+          <div ref={chatRef} className={`fixed bottom-24 w-96 z-40 animate-fade-in-up hidden md:block right-8`}>
              <BledChat />
           </div>
         )}

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Search, ExternalLink, Calendar, Filter, ChevronDown, ChevronRight, MapPin, X, LayoutGrid, List } from 'lucide-react';
+import { Search, ExternalLink, Calendar, Filter, ChevronDown, ChevronRight, MapPin, X, LayoutGrid, List, Clock, Moon } from 'lucide-react';
 import { Marketplace } from './Marketplace';
 import { CURRENCY_RATES, TRANSLATIONS } from '../constants';
 
 interface HomeProps {
   notify: (msg: string, type: 'success' | 'error' | 'info') => void;
   onContact: (recipient: string) => void;
-  language: 'FR' | 'EN' | 'AR';
+  language: 'FR' | 'EN';
 }
 
 export const Home: React.FC<HomeProps> = ({ notify, onContact, language }) => {
@@ -26,6 +26,14 @@ export const Home: React.FC<HomeProps> = ({ notify, onContact, language }) => {
     { title: "Salon de l'Automobile (SAFEX)", date: "20-25 Oct" },
     { title: "Exposition Artistique - Bastion 23", date: "22 Oct" },
     { title: "Concert Andalouse - Opéra", date: "28 Oct" }
+  ];
+
+  const prayerTimes = [
+    { name: 'Fajr', time: '05:42' },
+    { name: 'Dhuhr', time: '12:45' },
+    { name: 'Asr', time: '16:02' },
+    { name: 'Maghreb', time: '18:55' },
+    { name: 'Isha', time: '20:15' },
   ];
 
   return (
@@ -54,7 +62,7 @@ export const Home: React.FC<HomeProps> = ({ notify, onContact, language }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.searchPlaceholder}
-              className={`w-full bg-transparent border-none py-4 px-4 text-lg text-white placeholder-gray-500 focus:outline-none ${language === 'AR' ? 'text-right' : 'text-left'}`}
+              className="w-full bg-transparent border-none py-4 px-4 text-lg text-white placeholder-gray-500 focus:outline-none"
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="mr-4 text-gray-500 hover:text-white">
@@ -69,6 +77,22 @@ export const Home: React.FC<HomeProps> = ({ notify, onContact, language }) => {
         {/* Left Sidebar Widgets */}
         <div className="lg:col-span-1 space-y-6">
           
+          {/* Prayer Times Widget */}
+          <div className="bg-[#13151b] border border-[#2a2e37] rounded-2xl overflow-hidden shadow-lg p-5">
+             <div className="flex items-center space-x-2 mb-4 text-emerald-400">
+               <Moon className="w-4 h-4" />
+               <h3 className="font-bold text-xs uppercase tracking-wider">Horaires de Prière (Alger)</h3>
+             </div>
+             <div className="space-y-2">
+               {prayerTimes.map((pt, idx) => (
+                 <div key={idx} className="flex justify-between items-center text-sm py-1 border-b border-[#2a2e37] last:border-0">
+                   <span className="text-gray-400">{pt.name}</span>
+                   <span className="font-mono font-bold text-white">{pt.time}</span>
+                 </div>
+               ))}
+             </div>
+          </div>
+
           {/* Currency Widget */}
           <div className="bg-[#13151b] border border-[#2a2e37] rounded-2xl overflow-hidden shadow-lg">
             <div className="p-4 border-b border-[#2a2e37] flex justify-between items-center bg-[#181b21]/50">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MoreVertical, MessageCircle, Send, X, Shield, User } from 'lucide-react';
+import { Search, MoreVertical, MessageCircle, Send, X, Shield, User, Star } from 'lucide-react';
 import { UserProfile } from '../types';
 
 interface MessagingLayoutProps {
@@ -34,7 +34,7 @@ export const MessagingLayout: React.FC<MessagingLayoutProps> = ({ onClose, curre
     { id: 2, text: currentUser?.role === 'admin' ? "Sure, what seems to be the problem?" : "Walikoum Salam! Yes it is. The price is slightly negotiable.", isMe: true, time: "10:32 AM" }
   ]);
 
-  // Reset messages when switching mock users (just for demo purposes)
+  // Reset messages when switching mock users
   useEffect(() => {
      if(currentUser?.role === 'admin') {
          setMessages([
@@ -80,22 +80,22 @@ export const MessagingLayout: React.FC<MessagingLayoutProps> = ({ onClose, curre
              </button>
           </div>
           
-          <div className="flex bg-[#0f1117] p-1 rounded-xl border border-[#2a2e37]">
+          <div className="flex bg-[#0f1117] p-1 rounded-xl border border-[#2a2e37] space-x-1">
             <button 
               onClick={() => setActiveTab('buying')}
-              className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-all ${
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
                 activeTab === 'buying' ? 'bg-[#2a2e37] text-white shadow-sm ring-1 ring-white/5' : 'text-gray-400 hover:text-gray-300'
               }`}
             >
-              {currentUser?.role === 'admin' ? 'Open Tickets' : 'Buying'}
+              Buying
             </button>
             <button 
               onClick={() => setActiveTab('selling')}
-              className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-all ${
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
                 activeTab === 'selling' ? 'bg-[#2a2e37] text-white shadow-sm ring-1 ring-white/5' : 'text-gray-400 hover:text-gray-300'
               }`}
             >
-              {currentUser?.role === 'admin' ? 'Resolved' : 'Selling'}
+              Selling
             </button>
           </div>
 
@@ -109,18 +109,20 @@ export const MessagingLayout: React.FC<MessagingLayoutProps> = ({ onClose, curre
           </div>
         </div>
 
-        {/* Conversation List */}
+        {/* Content List */}
         <div className="flex-1 overflow-y-auto bg-[#16181d]">
           {conversations.map((chat) => (
             <div 
               key={chat.id}
               onClick={() => setSelectedChat(chat.id)}
-              className={`p-4 flex items-center space-x-3 cursor-pointer transition-colors border-b border-[#2a2e37]/50 ${
-                selectedChat === chat.id ? 'bg-[#2a2e37]/50 border-l-2 border-l-indigo-500' : 'hover:bg-[#2a2e37]/30 border-l-2 border-l-transparent'
+              className={`p-4 flex items-center space-x-3 cursor-pointer transition-all border-b border-[#2a2e37]/50 ${
+                selectedChat === chat.id 
+                  ? 'bg-indigo-500/10 border-l-4 border-l-indigo-500' 
+                  : 'hover:bg-[#2a2e37]/30 border-l-4 border-l-transparent'
               }`}
             >
               <div className="relative">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border ${
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm border-2 ${
                     (chat as any).isReport ? 'bg-red-500/20 text-red-400 border-red-500/30' :
                     (chat as any).isOfficial ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30' :
                     'bg-gray-700 text-gray-300 border-gray-600'
@@ -128,22 +130,24 @@ export const MessagingLayout: React.FC<MessagingLayoutProps> = ({ onClose, curre
                   {chat.avatar}
                 </div>
                 {/* Online Indicator */}
-                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#16181d] rounded-full"></span>
+                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#16181d] rounded-full"></span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-baseline mb-1">
                   <div className="flex items-center space-x-1">
-                      <h3 className="text-sm font-bold text-white truncate">{chat.name}</h3>
+                      <h3 className={`text-sm font-bold truncate ${selectedChat === chat.id ? 'text-indigo-400' : 'text-white'}`}>{chat.name}</h3>
                       {(chat as any).isReport && <Shield className="w-3 h-3 text-red-500" />}
                   </div>
-                  <span className="text-xs text-gray-500">{chat.time}</span>
+                  <span className="text-[10px] text-gray-500 font-medium">{chat.time}</span>
                 </div>
-                <p className={`text-xs truncate ${chat.unread > 0 ? 'text-gray-200 font-medium' : 'text-gray-400'}`}>
+                <p className={`text-xs truncate ${chat.unread > 0 ? 'text-white font-medium' : 'text-gray-400'}`}>
                   {chat.message}
                 </p>
               </div>
               {chat.unread > 0 && (
-                <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full shadow-sm shadow-indigo-500/50"></div>
+                <div className="w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm shadow-indigo-500/50">
+                  {chat.unread}
+                </div>
               )}
             </div>
           ))}
@@ -156,8 +160,8 @@ export const MessagingLayout: React.FC<MessagingLayoutProps> = ({ onClose, curre
         <div className="p-4 border-b border-[#2a2e37] flex justify-between items-center bg-[#16181d] shadow-sm z-10">
           <div className="flex items-center space-x-3">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border ${
-                 (currentChatData as any).isReport ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30'
+                (currentChatData as any).isReport ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                'bg-indigo-500/20 text-indigo-400 border-indigo-500/30'
             }`}>
               {currentChatData.avatar}
             </div>
@@ -194,22 +198,22 @@ export const MessagingLayout: React.FC<MessagingLayoutProps> = ({ onClose, curre
           
           {messages.map((msg) => (
             <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start items-end'}`}>
-               {!msg.isMe && (
-                 <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center font-bold text-xs mr-2 border border-gray-600 text-white mb-1">
+              {!msg.isMe && (
+                <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center font-bold text-xs mr-2 border border-gray-600 text-white mb-1">
                   {currentChatData.avatar}
                 </div>
-               )}
-               <div className={`
-                 p-3.5 rounded-2xl max-w-[75%] shadow-md border 
-                 ${msg.isMe 
-                   ? 'bg-indigo-600 text-white border-indigo-500/50 rounded-tr-none' 
-                   : 'bg-[#1e2025] text-gray-100 border-[#2a2e37] rounded-tl-none'}
-               `}>
-                 <p className="text-sm leading-relaxed">{msg.text}</p>
-                 <span className={`text-[10px] block mt-1 ${msg.isMe ? 'text-indigo-200 opacity-75 text-right' : 'text-gray-500'}`}>
-                   {msg.time}
-                 </span>
-               </div>
+              )}
+              <div className={`
+                p-3.5 rounded-2xl max-w-[75%] shadow-md border relative
+                ${msg.isMe 
+                  ? 'bg-indigo-600 text-white border-indigo-500/50 rounded-tr-none' 
+                  : 'bg-[#1e2025] text-gray-100 border-[#2a2e37] rounded-tl-none'}
+              `}>
+                <p className="text-sm leading-relaxed">{msg.text}</p>
+                <span className={`text-[10px] block mt-1 ${msg.isMe ? 'text-indigo-200 opacity-75 text-right' : 'text-gray-500'}`}>
+                  {msg.time}
+                </span>
+              </div>
             </div>
           ))}
         </div>

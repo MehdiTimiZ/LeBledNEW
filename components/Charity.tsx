@@ -19,59 +19,15 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
 
   const handleJoinToggle = (id: string) => {
     const isJoined = joinedEvents.includes(id);
-    
     if (isJoined) {
       setJoinedEvents(joinedEvents.filter(eventId => eventId !== id));
-      setEvents(events.map(ev => 
-        ev.id === id ? { ...ev, joined: ev.joined - 1 } : ev
-      ));
-      notify('You have left the event.', 'info');
+      setEvents(events.map(ev => ev.id === id ? { ...ev, joined: ev.joined - 1 } : ev));
+      notify('Vous avez quitté l\'événement.', 'info');
     } else {
       setJoinedEvents([...joinedEvents, id]);
-      setEvents(events.map(ev => 
-        ev.id === id ? { ...ev, joined: ev.joined + 1 } : ev
-      ));
-      notify('You have successfully joined the event!', 'success');
+      setEvents(events.map(ev => ev.id === id ? { ...ev, joined: ev.joined + 1 } : ev));
+      notify('Inscription réussie !', 'success');
     }
-  };
-
-  const handleLikeToggle = (id: string) => {
-    if (likedEvents.includes(id)) {
-      setLikedEvents(likedEvents.filter(eventId => eventId !== id));
-    } else {
-      setLikedEvents([...likedEvents, id]);
-      notify('Event added to favorites', 'success');
-    }
-  };
-
-  const handleWebSync = () => {
-    setIsScraping(true);
-    notify('Scanning local networks for events...', 'info');
-    
-    // Simulate web scraping delay
-    setTimeout(() => {
-      setIsScraping(false);
-      notify('Sync complete! Found 2 new events nearby.', 'success');
-      // In a real app, this would append data from the scraper service
-    }, 2000);
-  };
-
-  const handleCreateEvent = (data: NewEventData) => {
-    const newEvent: CharityEvent = {
-      id: Date.now().toString(),
-      title: data.title,
-      location: data.location || 'TBD',
-      joined: 1,
-      goal: data.maxParticipants || 50,
-      progress: 0,
-      category: 'Community', // Default category
-      description: data.description,
-      date: data.date
-    };
-    
-    setEvents([newEvent, ...events]);
-    notify('Event published successfully to the feed!', 'success');
-    setIsCreateModalOpen(false);
   };
 
   const filteredEvents = events.filter(event => 
@@ -79,173 +35,100 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
     event.location.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Today';
-    try {
-      const d = new Date(dateString);
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    } catch (e) {
-      return 'Today';
-    }
-  };
-
   return (
     <div className="space-y-8 animate-fade-in relative">
-      {/* Banner */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#1a2e05] to-[#0f1a03] border border-[#2f400f] min-h-[300px] flex flex-col md:flex-row items-center p-8 md:p-12 gap-8">
+      <div className="relative rounded-[3rem] overflow-hidden bg-gradient-to-r from-[#1a2e05] to-[#0f1a03] border border-[#2f400f] min-h-[350px] flex flex-col md:flex-row items-center p-12 gap-12 shadow-2xl">
         <div className="relative z-10 flex-1">
-          <h1 className="text-4xl md:text-5xl font-bold text-green-100 mb-4">Civil Mob</h1>
-          <h2 className="text-2xl font-semibold text-green-200/80 mb-4">Civic Action & Volunteering</h2>
-          <p className="text-lg text-green-200/70 mb-8 leading-relaxed max-w-xl">
-            Join the movement. From cleaning up neighborhoods to planting trees. We scrape social media to find the latest active campaigns so you can join in.
-          </p>
+          <span className="bg-emerald-500/20 text-emerald-400 px-4 py-1.5 rounded-xl text-xs font-bold border border-emerald-500/20 uppercase tracking-widest mb-4 inline-block">Civil Mob</span>
+          <h1 className="text-5xl font-black text-white mb-4 tracking-tighter">Civic Action Hub</h1>
+          <p className="text-xl text-green-200/70 mb-8 max-w-xl">Rejoignez des campagnes de quartier ou lancez votre propre mouvement solidaire.</p>
           <div className="flex flex-wrap gap-4">
-            <button 
-              onClick={() => setIsCreateModalOpen(true)}
-              className="bg-white text-green-900 px-6 py-3 rounded-full font-bold flex items-center space-x-2 hover:bg-green-50 transition-colors shadow-lg shadow-green-900/20"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Create Event</span>
+            <button onClick={() => setIsCreateModalOpen(true)} className="bg-white text-green-900 px-8 py-4 rounded-3xl font-black uppercase tracking-widest flex items-center gap-2 hover:scale-105 transition-all shadow-xl shadow-green-900/40">
+              <Plus className="w-5 h-5" /> Créer un Événement
             </button>
-            <button 
-              onClick={handleWebSync}
-              disabled={isScraping}
-              className="bg-green-950/50 border border-green-800/50 text-green-200 px-6 py-3 rounded-full font-medium flex items-center space-x-2 hover:bg-green-900/50 transition-colors backdrop-blur-sm"
-            >
-              {isScraping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
-              <span>{isScraping ? 'Syncing...' : 'Live Data from Web'}</span>
+            <button onClick={() => setIsScraping(!isScraping)} className="bg-green-950/50 border border-green-800/50 text-green-200 px-8 py-4 rounded-3xl font-black uppercase tracking-widest flex items-center gap-2 backdrop-blur-md transition-all">
+              {isScraping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />} Live Sync
             </button>
           </div>
         </div>
-
-        {/* Search & Filter - Right Side of Banner */}
-        <div className="relative z-10 w-full md:w-80 bg-black/20 backdrop-blur-md rounded-2xl p-4 border border-white/10 space-y-4">
-           <div className="relative">
-             <Search className="absolute left-3 top-3 w-4 h-4 text-green-200/50" />
-             <input 
-               type="text" 
-               placeholder="Search events..."
-               value={searchQuery}
-               onChange={(e) => setSearchQuery(e.target.value)}
-               className="w-full bg-black/20 border border-green-500/20 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-green-200/30 focus:outline-none focus:border-green-500/50 transition-colors text-sm"
-             />
-           </div>
-           
-           <div className="flex space-x-2">
-             <button className="flex-1 bg-green-500/20 hover:bg-green-500/30 border border-green-500/20 rounded-xl py-2 text-xs font-bold text-green-100 flex items-center justify-center transition-colors">
-               <Filter className="w-3 h-3 mr-1.5" /> Filter
-             </button>
-             <button className="flex-1 bg-black/20 hover:bg-black/30 border border-white/10 rounded-xl py-2 text-xs font-bold text-green-200/70 transition-colors">
-               Nearby
-             </button>
-           </div>
-           
-           <div className="text-xs text-green-200/40 text-center">
-              Showing events within 20km
-           </div>
-        </div>
-
-        {/* Background Decoration */}
-        <div className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1/4 opacity-10 text-green-500 pointer-events-none">
-          <Sprout className="w-96 h-96 fill-current" />
-        </div>
       </div>
 
-      {/* Events Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredEvents.map((event) => {
           const isJoined = joinedEvents.includes(event.id);
           const isLiked = likedEvents.includes(event.id);
           const progress = Math.min(100, Math.round((event.joined / event.goal) * 100));
           
           return (
-            <div key={event.id} className="relative bg-[#13151b] border border-[#2a2e37] rounded-2xl p-6 hover:border-[#3f4552] transition-all group">
-              {/* Like Button (Absolute Top Left) */}
-              <button 
-                onClick={() => handleLikeToggle(event.id)}
-                className="absolute top-4 left-4 z-10 p-2 rounded-full bg-black/40 backdrop-blur-sm border border-white/10 hover:bg-black/60 transition-colors"
-              >
-                <Heart className={`w-5 h-5 ${isLiked ? 'fill-red-500 text-red-500' : 'text-white'}`} />
-              </button>
-
-              <div className="flex justify-end items-start mb-6">
-                <div className="flex space-x-2">
-                   <span className="px-3 py-1 bg-[#181b21] border border-[#2a2e37] rounded-lg text-xs font-medium text-gray-300 flex items-center">
-                    {formatDate(event.date)}
-                   </span>
-                   <span className="px-3 py-1 bg-[#181b21] border border-[#2a2e37] rounded-lg text-xs font-medium text-gray-300 flex items-center">
-                    <Globe className="w-3 h-3 mr-1" /> Web
-                   </span>
+            <div key={event.id} className="bg-[#13151b] border border-[#2a2e37] rounded-3xl overflow-hidden group hover:border-[#3f4552] transition-all flex flex-col shadow-lg hover:shadow-2xl">
+              <div className="h-48 flex items-center justify-center bg-gradient-to-b from-[#181b21] to-[#13151b] relative">
+                <div className={`w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl border ${event.category === 'Environment' ? 'bg-green-500/20 border-green-500/30 text-green-500' : 'bg-pink-500/20 border-pink-500/30 text-pink-500'}`}>
+                  {event.category === 'Environment' ? <Sprout className="w-10 h-10" /> : <Gift className="w-10 h-10" />}
                 </div>
+                <div className="absolute top-4 right-4">
+                  <button onClick={() => setLikedEvents(prev => prev.includes(event.id) ? prev.filter(id => id !== event.id) : [...prev, event.id])} className={`p-2 rounded-xl backdrop-blur-md border border-white/5 transition-all ${isLiked ? 'bg-red-500 text-white' : 'bg-black/40 text-white hover:bg-black/60'}`}>
+                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+                  </button>
+                </div>
+                <span className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md border border-white/10 text-gray-300 text-[10px] font-bold px-3 py-1 rounded-xl uppercase tracking-widest">{event.category}</span>
               </div>
 
-              <div className="mb-6">
-                <div className="w-12 h-12 rounded-xl bg-[#131e08] border border-green-900/30 flex items-center justify-center mb-4">
-                  {event.category === 'Environment' ? (
-                    <Sprout className="w-6 h-6 text-green-500" />
-                  ) : (
-                    <Gift className="w-6 h-6 text-pink-500" />
-                  )}
+              <div className="p-6 flex flex-col flex-1">
+                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-green-400 transition-colors leading-tight">{event.title}</h3>
+                <div className="flex items-center text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-6">
+                  <MapPin className="w-3 h-3 mr-1 text-green-500" /> {event.location}
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-green-400 transition-colors">{event.title}</h3>
-                <p className="text-sm text-gray-400">{event.category}</p>
-              </div>
 
-              <div className="space-y-4 mb-6">
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span className="flex items-center"><UserPlus className="w-3 h-3 mr-1"/> {event.joined} joined</span>
-                  <span>Goal: {event.goal}</span>
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
+                    <span>{event.joined} Membres</span>
+                    <span>Objectif : {event.goal}</span>
+                  </div>
+                  <div className="h-2 bg-[#0f1117] rounded-full overflow-hidden border border-white/5">
+                    <div className="h-full bg-green-500 rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(34,197,94,0.4)]" style={{ width: `${progress}%` }}></div>
+                  </div>
                 </div>
-                <div className="h-2 bg-[#181b21] rounded-full overflow-hidden">
-                  <div className="h-full bg-green-600 rounded-full transition-all duration-1000" style={{ width: `${progress}%` }}></div>
+
+                <div className="mt-auto pt-4 border-t border-[#2a2e37]/50 flex items-center justify-between gap-3">
+                  <button 
+                    onClick={() => handleJoinToggle(event.id)}
+                    className={`flex-1 py-3 rounded-2xl font-bold text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${isJoined ? 'bg-red-500/20 text-red-400 border border-red-500/20' : 'bg-green-600 text-white shadow-xl shadow-green-900/20'}`}
+                  >
+                    {isJoined ? <X className="w-3 h-3" /> : <UserPlus className="w-3 h-3" />} {isJoined ? 'Annuler' : 'Rejoindre'}
+                  </button>
+                  <button 
+                    onClick={() => onContact(`Org: ${event.title}`)}
+                    className="p-3 bg-[#181b21] border border-[#2a2e37] rounded-2xl text-gray-400 hover:text-white transition-all"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </button>
                 </div>
-                <div className="text-right text-xs text-gray-500">{progress}% complete</div>
-              </div>
-
-              <div className="flex items-center text-sm text-gray-400 mb-6">
-                <MapPin className="w-4 h-4 mr-2" />
-                {event.location}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <button 
-                  onClick={() => handleJoinToggle(event.id)}
-                  className={`py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center ${
-                    isJoined 
-                      ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20' 
-                      : 'bg-green-600 hover:bg-green-700 text-white'
-                  }`}
-                >
-                  {isJoined ? (
-                    <>
-                      <X className="w-4 h-4 mr-2" />
-                      Cancel Join
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Join
-                    </>
-                  )}
-                </button>
-                <button 
-                  onClick={() => onContact(`Organizer of ${event.title}`, `Hi, I'm interested in the ${event.title} event.`)}
-                  className="bg-transparent border border-[#2a2e37] hover:border-gray-500 text-white py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Contact
-                </button>
               </div>
             </div>
           );
         })}
       </div>
-
+      
       <CreateEventModal 
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={handleCreateEvent}
+         isOpen={isCreateModalOpen}
+         onClose={() => setIsCreateModalOpen(false)}
+         onSubmit={(data) => {
+            const newEvent: CharityEvent = {
+              id: `event-${Date.now()}`,
+              title: data.title,
+              location: data.location,
+              joined: 1,
+              goal: data.maxParticipants,
+              progress: Math.round((1/data.maxParticipants)*100),
+              category: 'Environment'
+            };
+            setEvents(prev => [newEvent, ...prev]);
+            setJoinedEvents(prev => [...prev, newEvent.id]);
+            setIsCreateModalOpen(false);
+            notify('Event created successfully!', 'success');
+         }}
       />
+
     </div>
   );
 };

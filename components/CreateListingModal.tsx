@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, Upload, Wand2, Calendar, Clock, ChevronDown } from 'lucide-react';
 import { LocationInput } from './LocationInput';
@@ -7,7 +8,8 @@ interface CreateListingModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialCategory?: string;
-  language?: 'FR' | 'EN' | 'AR';
+  // Fix: language should only be 'FR' | 'EN' to match TRANSLATIONS
+  language?: 'FR' | 'EN';
 }
 
 export const CreateListingModal: React.FC<CreateListingModalProps> = ({ 
