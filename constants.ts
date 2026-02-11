@@ -15,7 +15,8 @@ export const TRANSLATIONS = {
       ADMIN_PANEL: 'Admin Panel',
       SELLER_DASHBOARD: 'Tableau de bord Vendeur',
       PROFILE: 'Paramètres',
-      LOGOUT: 'Déconnexion'
+      LOGOUT: 'Déconnexion',
+      EXPATS: 'Expats Hub'
     },
     ui: {
       searchPlaceholder: "Rechercher sur Lebled...",
@@ -72,7 +73,8 @@ export const TRANSLATIONS = {
       listings: "Annonces",
       noReviews: "Aucun avis pour le moment",
       beFirst: "Soyez le premier à donner votre avis !",
-      reviewCount: "Avis"
+      reviewCount: "Avis",
+      specifications: "Caractéristiques"
     }
   },
   EN: {
@@ -88,7 +90,8 @@ export const TRANSLATIONS = {
       ADMIN_PANEL: 'Admin Panel',
       SELLER_DASHBOARD: 'Seller Dashboard',
       PROFILE: 'Settings',
-      LOGOUT: 'Log Out'
+      LOGOUT: 'Log Out',
+      EXPATS: 'Expats Hub'
     },
     ui: {
       searchPlaceholder: "Search on Lebled...",
@@ -145,7 +148,8 @@ export const TRANSLATIONS = {
       listings: "Listings",
       noReviews: "No reviews yet",
       beFirst: "Be the first to rate!",
-      reviewCount: "Reviews"
+      reviewCount: "Reviews",
+      specifications: "Specifications"
     }
   }
 };
@@ -210,12 +214,21 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     seller: {
       name: 'Amine Auto',
       verified: true,
-      rating: 4.8
+      rating: 4.8,
+      phone: '0550123456'
     },
-    description: 'Peugeot 208 GT Line 2023 in pristine condition. Full options.',
+    description: 'Peugeot 208 GT Line 2023 in pristine condition. Full options. First hand, well maintained.',
     images: [
       'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=800'
-    ]
+    ],
+    specifications: {
+        "Year": 2023,
+        "Fuel": "Essence",
+        "Transmission": "Automatic",
+        "Kilometers": 12000,
+        "Engine": "1.2 PureTech 130ch",
+        "Color": "White"
+    }
   },
   {
     id: '2',
@@ -223,18 +236,26 @@ export const MARKETPLACE_ITEMS: MarketplaceItem[] = [
     price: '18,000,000 DZD',
     location: 'Oran',
     image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800',
-    tag: 'RealEstate',
+    tag: 'Real Estate',
     condition: 'Good',
     date: '2023-10-24',
     seller: {
       name: 'Sarah Immobilier',
       verified: true,
-      rating: 5.0
+      rating: 5.0,
+      phone: '0550654321'
     },
-    description: 'Beautiful F4 apartment located in the heart of Oran.',
+    description: 'Beautiful F4 apartment located in the heart of Oran. Close to all amenities, tramway, and schools.',
     images: [
       'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800'
-    ]
+    ],
+    specifications: {
+        "Surface": "120 m²",
+        "Rooms": 4,
+        "Floor": 3,
+        "Papers": "Act & Livret Foncier",
+        "Furnished": "No"
+    }
   }
 ];
 
@@ -245,7 +266,17 @@ export const COMMUNITY_POSTS: CommunityPost[] = [
     content: 'Salam alikoum, does anyone know a good mechanic in Hydra area?',
     timestamp: '2/6/2026, 2:19:36 PM',
     likes: 12,
-    comments: 4
+    comments: 4,
+    category: 'general'
+  },
+  {
+    id: '2',
+    user: 'JohnExpat',
+    content: 'Hello everyone! I just arrived in Algiers. Where is the best place to buy organic vegetables near Sidi Yahia?',
+    timestamp: '2/7/2026, 9:00:00 AM',
+    likes: 8,
+    comments: 12,
+    category: 'expat'
   }
 ];
 
@@ -301,6 +332,52 @@ export const DELIVERY_REQUESTS: DeliveryRequest[] = [
     distance: '25 km',
     vehicle: 'Van',
     status: 'Open'
+  }
+];
+
+export const EXPAT_HOUSING_ITEMS: MarketplaceItem[] = [
+  {
+    id: 'ex1',
+    title: 'Luxury 3BR Apt - Hydra Heights',
+    price: '2,500 EUR/mo',
+    location: 'Hydra, Alger',
+    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800',
+    tag: 'Real Estate',
+    condition: 'Furnished',
+    date: 'Today',
+    seller: {
+      name: 'Prestige Living',
+      verified: true,
+      rating: 5.0,
+      phone: '0550998877'
+    },
+    description: 'Fully furnished, high security, diplomat area. Includes generator and water tank.',
+    isPremium: true,
+    specifications: {
+        "Bedrooms": 3,
+        "Bathrooms": 2,
+        "Area": "150 m²",
+        "Security": "24/7",
+        "Parking": "Underground"
+    }
+  },
+  {
+    id: 'ex2',
+    title: 'Modern Villa with Pool',
+    price: '4,000 EUR/mo',
+    location: 'Ben Aknoun, Alger',
+    image: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&q=80&w=800',
+    tag: 'Real Estate',
+    condition: 'Furnished',
+    date: 'Yesterday',
+    seller: {
+      name: 'Elite Homes',
+      verified: true,
+      rating: 4.9,
+      phone: '0550112233'
+    },
+    description: 'Spacious villa, international school nearby. Perfect for families.',
+    isPremium: true
   }
 ];
 

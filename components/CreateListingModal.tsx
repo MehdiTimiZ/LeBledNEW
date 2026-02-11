@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Upload, Wand2, Calendar, Clock, ChevronDown } from 'lucide-react';
+import { X, Upload, Wand2, Calendar, Clock, ChevronDown, Briefcase, Award } from 'lucide-react';
 import { LocationInput } from './LocationInput';
 import { TRANSLATIONS } from '../constants';
 
@@ -24,6 +24,8 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
     startTime: '09:00',
     endTime: '17:00'
   });
+  // Service specific state
+  const [rateUnit, setRateUnit] = useState('job');
 
   const t = TRANSLATIONS[language]?.ui || TRANSLATIONS['FR'].ui;
 
@@ -138,7 +140,66 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
              </div>
           </div>
          );
-      case 'Medical Services': // Kept for backward compatibility if user selects it manually
+      case 'Services':
+      case 'Professional Services':
+         return (
+          <div className="bg-[#181b21] border border-indigo-500/30 rounded-xl p-4 space-y-4 mb-6 animate-fade-in">
+              <div className="flex items-center space-x-2 text-indigo-400 mb-2">
+                <Briefcase className="w-5 h-5" />
+                <h3 className="font-bold uppercase tracking-wider text-xs">Service Details</h3>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Service Category</label>
+                    <div className="relative">
+                      <select className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm appearance-none cursor-pointer">
+                         <option>Maintenance & Repair</option>
+                         <option>Cleaning</option>
+                         <option>Tutoring / Education</option>
+                         <option>IT & Tech Support</option>
+                         <option>Design & Creative</option>
+                         <option>Legal & Admin</option>
+                         <option>Transport & Moving</option>
+                         <option>Other</option>
+                      </select>
+                      <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-500 pointer-events-none" />
+                    </div>
+                 </div>
+                 <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Experience Level</label>
+                    <div className="relative">
+                      <select className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm appearance-none cursor-pointer">
+                         <option>Entry Level (1-2 years)</option>
+                         <option>Experienced (3-5 years)</option>
+                         <option>Expert (5-10 years)</option>
+                         <option>Master (10+ years)</option>
+                      </select>
+                      <Award className="absolute right-3 top-3 w-4 h-4 text-gray-500 pointer-events-none" />
+                    </div>
+                 </div>
+              </div>
+
+              <div className="space-y-1.5">
+                 <label className="text-xs font-bold text-gray-500 uppercase">Rate Structure</label>
+                 <div className="flex bg-[#0f1117] p-1 rounded-xl border border-[#2a2e37]">
+                    {['Hourly', 'Daily', 'Fixed Price'].map((unit) => {
+                       const val = unit === 'Hourly' ? 'hour' : unit === 'Daily' ? 'day' : 'job';
+                       return (
+                         <button 
+                           key={unit}
+                           onClick={() => setRateUnit(val)}
+                           className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${rateUnit === val ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                         >
+                           {unit}
+                         </button>
+                       );
+                    })}
+                 </div>
+              </div>
+          </div>
+         );
+      case 'Medical Services': // Kept for backward compatibility
       case 'Health':
          return (
           <div className="bg-[#181b21] border border-green-500/30 rounded-xl p-4 space-y-4 mb-6 animate-fade-in">
@@ -223,7 +284,7 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
             <label className="text-sm font-medium text-gray-300">{t.title}</label>
             <input 
               type="text" 
-              placeholder={category === 'Health' || category === 'Medical Services' ? "e.g. Cabinet Dr. Amrani" : "e.g. Peugeot 208 GT Line"}
+              placeholder={category === 'Health' || category === 'Medical Services' ? "e.g. Cabinet Dr. Amrani" : category === 'Services' ? "e.g. Expert Plumbing Repair" : "e.g. Peugeot 208 GT Line"}
               className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
             />
           </div>
@@ -240,6 +301,7 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
                     <option value="Vehicles">Vehicles</option>
                     <option value="Real Estate">Real Estate</option>
                     <option value="Phones">Phones</option>
+                    <option value="Services">Professional Services</option>
                     <option value="Health">Health</option>
                     <option value="Clothing">Clothing</option>
                     <option value="Home">Home</option>
@@ -257,7 +319,9 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
           {renderDynamicFields()}
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">{t.price} ({category === 'Health' ? 'Consultation Fee' : 'Item Price'})</label>
+            <label className="text-sm font-medium text-gray-300">
+                {category === 'Services' ? `Rate (per ${rateUnit})` : category === 'Health' ? 'Consultation Fee' : 'Item Price'}
+            </label>
             <input 
               type="number" 
               placeholder="0" 
@@ -301,7 +365,7 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
         {/* Footer */}
         <div className="p-6 border-t border-[#2a2e37] flex justify-end">
            <button className="bg-[#6366f1] hover:bg-[#4f46e5] text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all">
-             {t.publish}
+             {category === 'Services' ? 'Publish Service Offer' : t.publish}
            </button>
         </div>
       </div>

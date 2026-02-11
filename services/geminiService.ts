@@ -85,3 +85,32 @@ export const searchLocation = async (query: string): Promise<LocationResult> => 
     return { text: query };
   }
 };
+
+export const findCharityEvents = async (location: string): Promise<any[]> => {
+  try {
+    const ai = getClient();
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `Find 3 recent or upcoming charity/volunteering events near ${location}. Return a JSON array where each object has: title, location, category (Environment, Charity, Medical), and a brief description.`,
+      config: {
+        tools: [{ googleSearch: {} }],
+        responseMimeType: "application/json"
+      }
+    });
+
+    const text = response.text;
+    if (!text) return [];
+    
+    // Parse the JSON response
+    try {
+      const events = JSON.parse(text);
+      return Array.isArray(events) ? events : [];
+    } catch (e) {
+      console.error("Failed to parse charity events JSON", e);
+      return [];
+    }
+  } catch (error) {
+    console.error("Gemini Charity Search Error:", error);
+    return [];
+  }
+};

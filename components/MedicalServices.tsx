@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, MapPin, Star, Filter, RotateCcw, Activity, Phone, ChevronDown, ChevronUp, Plus, ImageOff } from 'lucide-react';
+import { Search, MapPin, Star, Filter, RotateCcw, Activity, Phone, ChevronDown, ChevronUp, Plus, ImageOff, MessageCircle } from 'lucide-react';
 import { MEDICAL_SERVICES } from '../constants';
 import { LocationInput } from './LocationInput';
 
@@ -9,9 +9,10 @@ interface MedicalServicesProps {
   onBook: (serviceName?: string) => void;
   onOpenCreate: () => void;
   language?: 'FR' | 'EN';
+  onContact?: (recipient: string, message: string) => void;
 }
 
-export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook, onOpenCreate, language = 'FR' }) => {
+export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook, onOpenCreate, language = 'FR', onContact }) => {
   const [location, setLocation] = useState('');
   const [type, setType] = useState('Any');
   const [search, setSearch] = useState('');
@@ -27,6 +28,15 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
 
   const toggleDetails = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
+  };
+
+  const handleWhatsApp = (number: string | undefined, name: string) => {
+    if (number) {
+        const url = `https://wa.me/${number.replace(/\D/g,'')}?text=Salam, inquiry about ${name}`;
+        window.open(url, '_blank');
+    } else {
+        notify('No WhatsApp number available', 'error');
+    }
   };
 
   return (
@@ -186,18 +196,28 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
                       </div>
                       <div className="grid grid-cols-2 gap-3 pt-2">
                         <button 
-                          onClick={() => notify('Service contacté!', 'info')}
+                          onClick={() => onContact && onContact(service.name, `Hi, I am interested in ${service.name} services.`)}
                           className="flex-1 bg-[#181b21] hover:bg-[#2a2e37] text-white py-3 rounded-xl text-xs font-bold border border-[#2a2e37] transition-all"
                         >
-                          Message
+                          Chat
                         </button>
                         <button 
-                          onClick={() => onBook(service.name)}
-                          className="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl text-xs font-bold shadow-lg shadow-green-500/20 transition-all"
+                          onClick={() => handleWhatsApp(service.contactNumber, service.name)}
+                          className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white py-3 rounded-xl text-xs font-bold transition-all"
                         >
-                          Book Now
+                          WhatsApp
                         </button>
                       </div>
+                      <button 
+                          onClick={() => {
+                              onBook(service.name);
+                              // Also trigger unified inbox logic implicitly by considering it a "booking request"
+                              if(onContact) onContact(service.name, `Booking Request for: ${service.name}`);
+                          }}
+                          className="w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl text-xs font-bold shadow-lg shadow-green-500/20 transition-all"
+                        >
+                          Book Appointment
+                        </button>
                     </div>
 
                     {!isExpanded && (

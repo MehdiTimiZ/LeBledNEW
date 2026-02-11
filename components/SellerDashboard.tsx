@@ -1,8 +1,11 @@
+
 import React, { useState } from 'react';
-import { Eye, MessageSquare, Package, TrendingUp, Search, Plus } from 'lucide-react';
+import { Eye, MessageSquare, Package, TrendingUp, Search, Plus, Briefcase } from 'lucide-react';
+import { CreateListingModal } from './CreateListingModal';
 
 export const SellerDashboard: React.FC<{ onOpenCreate: () => void }> = ({ onOpenCreate }) => {
   const [activeTab, setActiveTab] = useState<'active' | 'pending' | 'sold'>('active');
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
 
   const stats = [
     { label: 'Total Views', value: '1245', change: '+12%', icon: Eye, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
@@ -14,18 +17,27 @@ export const SellerDashboard: React.FC<{ onOpenCreate: () => void }> = ({ onOpen
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Seller Dashboard</h1>
           <p className="text-gray-400">Manage your business and track performance.</p>
         </div>
-        <button 
-          onClick={onOpenCreate}
-          className="bg-[#6366f1] hover:bg-[#4f46e5] text-white px-6 py-2.5 rounded-xl font-medium flex items-center space-x-2 shadow-lg shadow-indigo-500/20 transition-all"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Déposer une annonce</span>
-        </button>
+        <div className="flex gap-3">
+            <button 
+              onClick={() => setIsServiceModalOpen(true)}
+              className="bg-[#181b21] hover:bg-[#2a2e37] text-white px-6 py-2.5 rounded-xl font-medium flex items-center space-x-2 border border-[#2a2e37] transition-all"
+            >
+              <Briefcase className="w-5 h-5 text-indigo-400" />
+              <span>Offer a Service</span>
+            </button>
+            <button 
+              onClick={onOpenCreate}
+              className="bg-[#6366f1] hover:bg-[#4f46e5] text-white px-6 py-2.5 rounded-xl font-medium flex items-center space-x-2 shadow-lg shadow-indigo-500/20 transition-all"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Déposer une annonce</span>
+            </button>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -87,6 +99,12 @@ export const SellerDashboard: React.FC<{ onOpenCreate: () => void }> = ({ onOpen
           </p>
         </div>
       </div>
+
+      <CreateListingModal 
+        isOpen={isServiceModalOpen}
+        onClose={() => setIsServiceModalOpen(false)}
+        initialCategory="Services"
+      />
     </div>
   );
 };

@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { Plus, Globe, Heart, MapPin, MessageCircle, UserPlus, Sprout, Check, X, Gift, Search, Filter, Loader2, Megaphone, AlertTriangle } from 'lucide-react';
+import { Plus, Globe, Heart, MapPin, MessageCircle, UserPlus, Sprout, Check, X, Gift, Search, Filter, Loader2, Megaphone, AlertTriangle, ExternalLink } from 'lucide-react';
 import { CreateEventModal, NewEventData } from './CreateEventModal';
 import { CharityEvent } from '../types';
 import { BaseCard, CardMedia, CardBody, CardFooter, CardLabel } from './BaseCard';
+import { findCharityEvents } from '../services/geminiService';
 
 interface CharityProps {
   notify: (msg: string, type: 'success' | 'error' | 'info') => void;
@@ -32,6 +33,42 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
     }
   };
 
+  const handleLiveSync = async () => {
+    setIsScraping(true);
+    notify('Syncing live events from web...', 'info');
+    
+    try {
+        const externalEvents = await findCharityEvents("Algeria");
+        if (externalEvents.length > 0) {
+            const mappedEvents: CharityEvent[] = externalEvents.map((ev, index) => ({
+                id: `ext-${Date.now()}-${index}`,
+                title: ev.title,
+                location: ev.location,
+                joined: 0,
+                goal: 100, // Default goal
+                progress: 0,
+                category: ev.category || 'Charity',
+                description: ev.description,
+                isExternal: true,
+                sourceUrl: ev.link || '#' // Assuming source link might be available
+            }));
+            
+            // Avoid duplicates based on title
+            const newEvents = mappedEvents.filter(ne => !events.some(e => e.title === ne.title));
+            
+            setEvents([...newEvents, ...events]);
+            notify(`Found ${newEvents.length} new events!`, 'success');
+        } else {
+            notify('No new events found at this time.', 'info');
+        }
+    } catch (e) {
+        console.error(e);
+        notify('Failed to sync events.', 'error');
+    } finally {
+        setIsScraping(false);
+    }
+  };
+
   const filteredEvents = events.filter(event => 
     event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
     event.location.toLowerCase().includes(searchQuery.toLowerCase())
@@ -51,8 +88,13 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
             <button onClick={() => setIsCreateModalOpen(true)} className="bg-red-600 hover:bg-red-500 text-white px-8 py-4 rounded-[2rem] font-black uppercase tracking-widest flex items-center gap-2 hover:scale-105 transition-all shadow-xl shadow-red-900/40">
               <Megaphone className="w-5 h-5" /> Launch Campaign
             </button>
-            <button onClick={() => setIsScraping(!isScraping)} className="bg-red-950/50 border border-red-800/50 text-red-200 px-8 py-4 rounded-[2rem] font-black uppercase tracking-widest flex items-center gap-2 backdrop-blur-md transition-all">
-              {isScraping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />} Live Sync
+            <button 
+                onClick={handleLiveSync} 
+                disabled={isScraping}
+                className="bg-red-950/50 border border-red-800/50 text-red-200 px-8 py-4 rounded-[2rem] font-black uppercase tracking-widest flex items-center gap-2 backdrop-blur-md transition-all hover:bg-red-900/50"
+            >
+              {isScraping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />} 
+              {isScraping ? "Syncing..." : "Dir el Khir Live"}
             </button>
           </div>
         </div>
@@ -75,6 +117,11 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
                     <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
                   </button>
                 </div>
+                {event.isExternal && (
+                    <div className="absolute top-4 left-4 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+                        <Globe className="w-3 h-3" /> Web Result
+                    </div>
+                )}
                 <CardLabel color="red" className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md border-red-500/30 text-red-400">
                   {event.category}
                 </CardLabel>
@@ -82,9 +129,13 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
 
               <CardBody>
                 <h3 className="text-xl font-black text-white mb-2 group-hover:text-red-400 transition-colors leading-tight">{event.title}</h3>
-                <div className="flex items-center text-[10px] font-black uppercase tracking-widest text-gray-500 mb-6">
+                <div className="flex items-center text-[10px] font-black uppercase tracking-widest text-gray-500 mb-4">
                   <MapPin className="w-3 h-3 mr-1 text-red-500" /> {event.location}
                 </div>
+                
+                {event.description && (
+                    <p className="text-sm text-gray-400 mb-6 line-clamp-3">{event.description}</p>
+                )}
 
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
@@ -97,14 +148,23 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
                 </div>
 
                 <CardFooter>
+                  {event.isExternal ? (
+                      <button 
+                        onClick={() => window.open(event.sourceUrl, '_blank')}
+                        className="flex-1 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white"
+                      >
+                        <ExternalLink className="w-3 h-3" /> View Source
+                      </button>
+                  ) : (
+                      <button 
+                        onClick={() => handleJoinToggle(event.id)}
+                        className={`flex-1 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${isJoined ? 'bg-gray-800 text-gray-400 border border-gray-700' : 'bg-red-600 text-white shadow-xl shadow-red-900/30 hover:bg-red-500'}`}
+                      >
+                        {isJoined ? <X className="w-3 h-3" /> : <UserPlus className="w-3 h-3" />} {isJoined ? 'Leave' : 'Join Now'}
+                      </button>
+                  )}
                   <button 
-                    onClick={() => handleJoinToggle(event.id)}
-                    className={`flex-1 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${isJoined ? 'bg-gray-800 text-gray-400 border border-gray-700' : 'bg-red-600 text-white shadow-xl shadow-red-900/30 hover:bg-red-500'}`}
-                  >
-                    {isJoined ? <X className="w-3 h-3" /> : <UserPlus className="w-3 h-3" />} {isJoined ? 'Leave' : 'Join Now'}
-                  </button>
-                  <button 
-                    onClick={() => onContact(`Org: ${event.title}`)}
+                    onClick={() => onContact(`Org: ${event.title}`, `I want to help with ${event.title}`)}
                     className="p-3 bg-[#181b21] border border-[#2a2e37] rounded-2xl text-gray-400 hover:text-white transition-all"
                   >
                     <MessageCircle className="w-4 h-4" />

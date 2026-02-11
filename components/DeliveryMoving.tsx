@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Truck, Package, Calendar, MessageCircle, Filter, Plus, Search, User, AtSign, Phone, ChevronDown } from 'lucide-react';
+import { Truck, Package, Calendar, MessageCircle, Filter, Plus, Search, User, AtSign, Phone, ChevronDown, Users, CheckSquare } from 'lucide-react';
 import { DELIVERY_REQUESTS } from '../constants';
 import { LocationInput } from './LocationInput';
 import { DeliveryRequest } from '../types';
@@ -21,6 +21,7 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
   const [vehicle, setVehicle] = useState('Scooter');
   const [budget, setBudget] = useState('');
   const [phone, setPhone] = useState('');
+  const [requiresMovers, setRequiresMovers] = useState(false);
 
   // Generate date options for the next 30 days with "Today" and "Tomorrow" labels
   const dateOptions = Array.from({ length: 30 }, (_, i) => {
@@ -47,7 +48,8 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
       budget: `${budget} DZD`,
       distance: 'Calculating...',
       vehicle: vehicle,
-      status: 'Open'
+      status: 'Open',
+      requires_movers: requiresMovers
     };
 
     setPosts([newRequest, ...posts]);
@@ -59,6 +61,7 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
     setDate('');
     setBudget('');
     setPhone('');
+    setRequiresMovers(false);
   };
 
   const handleChatClick = (type: string, id: string) => {
@@ -173,6 +176,23 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
                </div>
              </div>
 
+             {/* Professional Movers Checkbox */}
+             {role === 'requester' && (
+               <div 
+                 className={`flex items-center p-3 rounded-xl border transition-all cursor-pointer ${requiresMovers ? 'bg-red-500/10 border-red-500' : 'bg-[#0f1117] border-[#2a2e37] hover:border-gray-500'}`}
+                 onClick={() => setRequiresMovers(!requiresMovers)}
+               >
+                 <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 ${requiresMovers ? 'bg-red-500 border-red-500' : 'border-gray-500'}`}>
+                   {requiresMovers && <CheckSquare className="w-3.5 h-3.5 text-white" />}
+                 </div>
+                 <div className="flex-1">
+                   <p className={`text-sm font-bold ${requiresMovers ? 'text-red-400' : 'text-gray-300'}`}>Request Professional Movers</p>
+                   <p className="text-[10px] text-gray-500">Check this for heavy lifting or full house moves</p>
+                 </div>
+                 <Users className={`w-5 h-5 ${requiresMovers ? 'text-red-500' : 'text-gray-600'}`} />
+               </div>
+             )}
+
              {/* Contact Info */}
              <div className="pt-4 border-t border-[#2a2e37] space-y-4">
                 <p className="text-xs font-bold text-gray-400 uppercase">Contact Information</p>
@@ -230,7 +250,12 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
                      <Package className="w-5 h-5 text-amber-500" />
                    </div>
                    <div>
-                     <h3 className="font-bold text-white text-lg">{request.type} Request</h3>
+                     <div className="flex items-center gap-2">
+                       <h3 className="font-bold text-white text-lg">{request.type} Request</h3>
+                       {request.requires_movers && (
+                         <span className="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded border border-red-500/30 font-bold uppercase">Movers Needed</span>
+                       )}
+                     </div>
                      <p className="text-xs text-gray-500 flex items-center">
                         <span className="w-3 h-3 text-gray-600 mr-1">🕒</span> Posted on {request.date}
                      </p>

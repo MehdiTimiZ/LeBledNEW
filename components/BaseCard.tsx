@@ -25,8 +25,8 @@ export const BaseCard: React.FC<BaseCardProps> = ({
 }) => {
   const containerClasses = `
     relative overflow-hidden transition-all duration-500 ease-out
-    bg-[#13151b] border border-[#2a2e37] rounded-[2rem]
-    hover:border-[#3f4552] shadow-lg hover:shadow-2xl
+    bg-surface border border-border rounded-[2rem]
+    hover:border-muted/50 shadow-lg hover:shadow-2xl
     ${variant === 'list' ? 'flex flex-row' : 'flex flex-col'}
     ${className}
   `;
@@ -50,7 +50,7 @@ export const BaseCard: React.FC<BaseCardProps> = ({
           {/* Back Face */}
           <div className={`
             absolute inset-0 w-full h-full backface-hidden rotate-y-180 
-            bg-[#181b21] border border-indigo-500/30 rounded-[2rem] p-6 flex flex-col shadow-2xl
+            bg-surfaceAlt border border-indigo-500/30 rounded-[2rem] p-6 flex flex-col shadow-2xl
           `}>
             {backContent}
           </div>
@@ -102,7 +102,7 @@ export const CardFooter: React.FC<{
   children: React.ReactNode; 
   className?: string;
 }> = ({ children, className = '' }) => (
-  <div className={`mt-auto pt-4 border-t border-[#2a2e37]/50 flex items-center justify-between gap-3 ${className}`}>
+  <div className={`mt-auto pt-4 border-t border-border/50 flex items-center justify-between gap-3 ${className}`}>
     {children}
   </div>
 );

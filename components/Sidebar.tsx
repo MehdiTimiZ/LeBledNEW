@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LayoutDashboard, MessageCircle, Home, Car, Users, Heart, Stethoscope, Truck, Smartphone, ShieldAlert, LogOut, Settings, Sun, X } from 'lucide-react';
+import { LayoutDashboard, MessageCircle, Home, Car, Users, Heart, Stethoscope, Truck, Smartphone, ShieldAlert, LogOut, Settings, Sun, X, Globe } from 'lucide-react';
 import { AppView, UserProfile } from '../types';
 import { TRANSLATIONS } from '../constants';
 
@@ -20,6 +20,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
   const mainNavItems = [
     { id: AppView.HOME, label: t.HOME, icon: Home },
     { id: AppView.VEHICLES, label: t.VEHICLES, icon: Car },
+    { id: AppView.EXPATS, label: t.EXPATS, icon: Globe, color: 'text-teal-400', activeBg: 'bg-teal-500/20' },
     { id: AppView.COMMUNITY, label: t.COMMUNITY, icon: Users },
     { id: AppView.CHARITY, label: t.CHARITY, icon: Heart, color: 'text-red-500', activeBg: 'bg-red-500/20' },
     { id: AppView.SERVICES, label: t.SERVICES, icon: Stethoscope, color: 'text-green-500', activeBg: 'bg-green-500/20' },
@@ -37,23 +38,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
       />
 
       {/* Sidebar Container */}
-      <div className={`h-screen bg-[#0f1117] border-r border-[#2a2e37] flex flex-col fixed left-0 top-0 z-[100] transition-all duration-500 shadow-2xl overflow-hidden
+      <div className={`h-screen bg-background border-r border-border flex flex-col fixed left-0 top-0 z-[100] transition-all duration-500 shadow-2xl overflow-hidden
         ${isOpen ? 'w-72' : 'w-0 md:w-20'}
       `}>
         {/* Brand Section */}
-        <div className={`p-5 flex items-center border-b border-[#2a2e37] h-16 shrink-0 ${isOpen ? 'justify-between' : 'justify-center'}`}>
+        <div className={`p-5 flex items-center border-b border-border h-16 shrink-0 ${isOpen ? 'justify-between' : 'justify-center'}`}>
           <div className="flex items-center space-x-3 shrink-0">
             <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
               <Sun className="text-white w-5 h-5" />
             </div>
             {isOpen && (
               <div className="animate-fade-in whitespace-nowrap overflow-hidden">
-                <span className="text-lg font-bold text-white tracking-tight block leading-none">LeBled</span>
+                <span className="text-lg font-bold text-mainText tracking-tight block leading-none">LeBled</span>
               </div>
             )}
           </div>
           {isOpen && (
-            <button onClick={onClose} className="text-gray-500 hover:text-white md:hidden">
+            <button onClick={onClose} className="text-muted hover:text-mainText md:hidden">
               <X className="w-5 h-5" />
             </button>
           )}
@@ -61,13 +62,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto no-scrollbar">
-          {isOpen && <p className="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4 animate-fade-in">Menu</p>}
+          {isOpen && <p className="px-3 text-[10px] font-bold text-muted uppercase tracking-widest mb-4 animate-fade-in">Menu</p>}
           
           {mainNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
-            const activeClass = item.activeBg ? `${item.activeBg} text-white` : 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/20';
-            const iconColor = isActive ? 'text-white' : (item.color || 'text-gray-500 group-hover:text-gray-300');
+            const activeClass = item.activeBg ? `${item.activeBg} text-mainText` : 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/20';
+            const iconColor = isActive ? 'text-white' : (item.color || 'text-muted group-hover:text-mainText');
 
             return (
               <button
@@ -81,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
                   ${isOpen ? 'space-x-3' : 'justify-center'}
                   ${isActive
                     ? activeClass
-                    : 'text-gray-400 hover:bg-[#181b21] hover:text-white'
+                    : 'text-muted hover:bg-surface hover:text-mainText'
                   }`}
               >
                 <Icon className={`w-5 h-5 shrink-0 ${iconColor}`} />
@@ -93,7 +94,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
 
           {/* Role Based Section */}
           {currentUser && (
-            <div className={`pt-4 border-t border-[#2a2e37] space-y-2 ${isOpen ? 'mt-6' : 'mt-4'}`}>
+            <div className={`pt-4 border-t border-border space-y-2 ${isOpen ? 'mt-6' : 'mt-4'}`}>
               {currentUser.role === 'admin' && (
                 <button
                   onClick={() => {
@@ -105,7 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
                     ${isOpen ? 'space-x-3' : 'justify-center'}
                     ${currentView === AppView.ADMIN_PANEL
                       ? 'bg-red-900/30 text-red-400 border border-red-500/30'
-                      : 'text-gray-400 hover:bg-[#181b21] hover:text-red-400'
+                      : 'text-muted hover:bg-surface hover:text-red-400'
                     }`}
                 >
                   <ShieldAlert className="w-5 h-5 shrink-0" />
@@ -123,7 +124,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
                     ${isOpen ? 'space-x-3' : 'justify-center'}
                     ${currentView === AppView.SELLER_DASHBOARD
                       ? 'bg-indigo-600 text-white'
-                      : 'text-gray-400 hover:bg-[#181b21] hover:text-white'
+                      : 'text-muted hover:bg-surface hover:text-mainText'
                     }`}
                 >
                   <LayoutDashboard className="w-5 h-5 shrink-0" />
@@ -135,14 +136,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
         </nav>
 
         {/* Footer */}
-        <div className="p-3 border-t border-[#2a2e37] bg-[#0f1117] space-y-1 shrink-0">
+        <div className="p-3 border-t border-border bg-background space-y-1 shrink-0">
           <button 
              onClick={() => {
                onChangeView(AppView.PROFILE);
                if (window.innerWidth < 1024) onClose?.();
              }}
              title={!isOpen ? t.PROFILE : undefined}
-             className={`w-full flex items-center px-4 py-3 text-gray-400 hover:text-white hover:bg-[#181b21] rounded-xl transition-colors
+             className={`w-full flex items-center px-4 py-3 text-muted hover:text-mainText hover:bg-surface rounded-xl transition-colors
                ${isOpen ? 'space-x-3' : 'justify-center'}`}
           >
             <Settings className="w-5 h-5 shrink-0" />

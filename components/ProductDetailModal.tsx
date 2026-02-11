@@ -1,17 +1,19 @@
+
 import React, { useState, useEffect } from 'react';
-import { X, MapPin, Calendar, Share2, Flag, MessageCircle, ChevronLeft, ChevronRight, ShieldCheck, BadgeCheck, Star, Clock, ImageOff, Edit3, Heart, Maximize2, Link2 } from 'lucide-react';
+import { X, MapPin, Calendar, Share2, Flag, MessageCircle, ChevronLeft, ChevronRight, ShieldCheck, BadgeCheck, Star, Clock, ImageOff, Edit3, Heart, Maximize2, Phone, AlertTriangle, User } from 'lucide-react';
 import { MarketplaceItem, Review } from '../types';
 import { MOCK_REVIEWS, TRANSLATIONS } from '../constants';
 import { ReviewList, WriteReviewModal } from './ReviewSystem';
+import { ReportModal } from './ReportModal';
 
 interface ProductDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   item: MarketplaceItem | null;
-  onContact?: (recipient: string) => void;
+  onContact?: (recipient: string, message?: string) => void;
   onBook?: (itemName: string) => void;
   language?: 'FR' | 'EN';
-  onViewProfile?: () => void;
+  onViewProfile?: (name: string) => void;
 }
 
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ 
@@ -27,6 +29,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const [imgError, setImgError] = useState(false);
   const [itemReviews, setItemReviews] = useState<Review[]>([]);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
   const t = TRANSLATIONS[language]?.ui || TRANSLATIONS['FR'].ui;
@@ -57,21 +60,28 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   };
 
   const handleShare = () => {
-    const shareData = {
-      title: item.title,
-      text: `Découvrez ce ${item.title} sur LeBled !`,
-      url: window.location.href,
-    };
-    if (navigator.share) {
-      navigator.share(shareData).catch(console.error);
+    const text = `Check out this ${item.title} on LeBled! ${window.location.href}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const handleWhatsAppContact = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (item.seller.phone) {
+      const text = `Salam, I am interested in your listing: ${item.title}. Is it still available?`;
+      const url = `https://wa.me/${item.seller.phone.replace(/\D/g,'')}?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
     } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert('Lien de l\'annonce copié !');
+      alert("Seller phone number not available.");
     }
   };
 
-  const handleReport = () => {
-    alert('Signalement : Merci de nous aider à maintenir la communauté sûre.');
+  const handleInternalChat = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (onContact) {
+      onContact(item.seller.name, `Hi, I am interested in ${item.title}.`);
+      onClose();
+    }
   };
 
   const handleAddReview = (rating: number, comment: string) => {
@@ -92,9 +102,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const handleViewProfile = (e: React.MouseEvent) => {
       e.stopPropagation();
       if(onViewProfile) {
-        onViewProfile();
+        onViewProfile(item.seller.name);
         onClose();
       }
+  };
+
+  const handleReportSubmit = (reason: string) => {
+    console.log(`Reported ${item.title} for ${reason}`);
+    onClose(); // Hide modal and close detail
   };
 
   return (
@@ -195,15 +210,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </button>
                 <button 
                   onClick={handleShare}
-                  className="p-2.5 bg-[#181b21] hover:bg-[#2a2e37] text-gray-400 hover:text-white rounded-xl transition-all border border-white/5"
-                  title="Share"
+                  className="p-2.5 bg-[#181b21] hover:bg-[#2a2e37] text-gray-400 hover:text-green-400 rounded-xl transition-all border border-white/5"
+                  title="Share to WhatsApp"
                 >
                   <Share2 className="w-5 h-5" />
                 </button>
                 <button 
-                  onClick={handleReport}
-                  className="p-2.5 bg-[#181b21] hover:bg-[#2a2e37] text-gray-400 hover:text-white rounded-xl transition-all border border-white/5"
-                  title="Flag"
+                  onClick={() => setIsReportModalOpen(true)}
+                  className="p-2.5 bg-[#181b21] hover:bg-[#2a2e37] text-gray-400 hover:text-red-400 rounded-xl transition-all border border-white/5"
+                  title="Report"
                 >
                   <Flag className="w-5 h-5" />
                 </button>
@@ -250,15 +265,40 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                        </div>
                     </div>
                  </div>
-                 <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] group-hover:translate-x-1 transition-transform">
-                    {t.viewProfile}
-                 </span>
+                 {/* Quick Contact Action within Seller Card */}
+                 <div className="flex flex-col items-end gap-2">
+                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] group-hover:translate-x-1 transition-transform">
+                       {t.viewProfile}
+                    </span>
+                    <button 
+                      onClick={handleInternalChat}
+                      className="p-2 bg-[#2a2e37] hover:bg-indigo-600 text-gray-400 hover:text-white rounded-xl transition-all"
+                      title="Quick Message"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                    </button>
+                 </div>
               </div>
+
+              {/* Specifications Section */}
+              {item.specifications && (
+                <div className="space-y-4">
+                   <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-1">{t.specifications || "SPECIFICATIONS"}</h3>
+                   <div className="grid grid-cols-2 gap-3">
+                      {Object.entries(item.specifications).map(([key, value]) => (
+                        <div key={key} className="bg-[#181b21] p-4 rounded-2xl border border-[#2a2e37] flex flex-col">
+                           <span className="text-[10px] font-bold text-gray-500 uppercase mb-1">{key}</span>
+                           <span className="text-sm font-bold text-white truncate">{value}</span>
+                        </div>
+                      ))}
+                   </div>
+                </div>
+              )}
 
               {/* Description Section */}
               <div className="space-y-4">
                  <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-1">{t.description}</h3>
-                 <p className="text-gray-300 leading-relaxed text-sm bg-[#181b21]/30 p-6 rounded-[2rem] border border-[#2a2e37]/20">
+                 <p className="text-gray-300 leading-relaxed text-sm bg-[#181b21]/30 p-6 rounded-[2rem] border border-[#2a2e37]/20 whitespace-pre-wrap">
                     {item.description || "Aucune description fournie pour cet article."}
                  </p>
               </div>
@@ -266,7 +306,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               {/* Reviews Section */}
               <div className="pt-4 space-y-6">
                  <div className="flex justify-between items-center">
-                   <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-1">AVIS ({itemReviews.length})</h3>
+                   <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-1">{t.reviewCount || "REVIEWS"} ({itemReviews.length})</h3>
                    <button 
                      onClick={() => setIsReviewModalOpen(true)}
                      className="text-[10px] font-black text-indigo-400 hover:text-indigo-300 flex items-center bg-indigo-500/10 px-4 py-2 rounded-xl transition-all"
@@ -280,7 +320,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       <ReviewList reviews={itemReviews} />
                     ) : (
                       <div className="text-center py-10 bg-[#181b21]/20 rounded-[2rem] border border-dashed border-[#2a2e37]">
-                        <p className="text-xs text-gray-600 font-bold uppercase tracking-widest italic">Soyez le premier à donner votre avis !</p>
+                        <p className="text-xs text-gray-600 font-bold uppercase tracking-widest italic">{t.beFirst || "Be the first!"}</p>
                       </div>
                     )}
                  </div>
@@ -299,20 +339,28 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </div>
            </div>
 
-           {/* Call to Action Footer */}
-           <div className="p-8 border-t border-[#2a2e37]/30 bg-[#181b21] flex gap-4 mt-auto">
+           {/* Unified Call to Action Footer */}
+           <div className="p-8 border-t border-[#2a2e37]/30 bg-[#181b21] flex flex-col sm:flex-row gap-4 mt-auto">
               <button 
-                 onClick={() => onContact && onContact(item.title)}
-                 className={`flex-1 bg-[#2a2e37] hover:bg-[#343944] text-white py-5 rounded-3xl font-black text-xs uppercase tracking-widest flex items-center justify-center space-x-3 transition-all active:scale-[0.98] ${isMedicalService ? 'w-1/3' : 'w-full'}`}
+                 onClick={handleInternalChat}
+                 className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-4 rounded-3xl font-black text-xs uppercase tracking-widest flex items-center justify-center space-x-3 transition-all active:scale-[0.98] shadow-lg shadow-indigo-500/20"
               >
                  <MessageCircle className="w-5 h-5" />
-                 <span>{t.contact}</span>
+                 <span>Chat in App</span>
               </button>
               
+              <button 
+                 onClick={handleWhatsAppContact}
+                 className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 rounded-3xl font-black text-xs uppercase tracking-widest flex items-center justify-center space-x-3 transition-all active:scale-[0.98] shadow-lg shadow-green-500/20"
+              >
+                 <Phone className="w-5 h-5" />
+                 <span>WhatsApp</span>
+              </button>
+
               {isMedicalService && onBook && (
                 <button 
                    onClick={() => onBook(item.title)}
-                   className="flex-[2] bg-indigo-600 hover:bg-indigo-500 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-widest flex items-center justify-center space-x-3 shadow-2xl shadow-indigo-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                   className="flex-1 bg-[#2a2e37] hover:bg-[#343944] text-white py-4 rounded-3xl font-black text-xs uppercase tracking-widest flex items-center justify-center space-x-3 transition-all border border-[#3f4552]"
                 >
                    <Clock className="w-5 h-5" />
                    <span>{t.book}</span>
@@ -326,6 +374,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
         onSubmit={handleAddReview}
+        targetName={item.title}
+      />
+
+      <ReportModal 
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        onSubmit={handleReportSubmit}
         targetName={item.title}
       />
     </div>

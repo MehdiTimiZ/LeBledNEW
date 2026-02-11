@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export enum AppView {
@@ -14,10 +15,11 @@ export enum AppView {
   SELLER_DASHBOARD = 'SELLER_DASHBOARD',
   PROFILE = 'PROFILE',
   SUBSCRIPTION = 'SUBSCRIPTION',
-  ADMIN_PANEL = 'ADMIN_PANEL'
+  ADMIN_PANEL = 'ADMIN_PANEL',
+  EXPATS = 'EXPATS'
 }
 
-export type UserRole = 'admin' | 'user' | 'seller';
+export type UserRole = 'admin' | 'user' | 'seller' | 'super_admin';
 
 export interface UserProfile {
   id: string;
@@ -27,6 +29,9 @@ export interface UserProfile {
   avatar?: string;
   cover?: string;
   isVerified?: boolean;
+  phone?: string;
+  phone_verified?: boolean;
+  createdAt?: string;
 }
 
 export interface ChatMessage {
@@ -64,9 +69,17 @@ export interface MarketplaceItem {
     avatar?: string;
     verified?: boolean;
     rating?: number;
+    phone?: string; // Added for WhatsApp
   };
   description?: string;
   images?: string[];
+  isPremium?: boolean; // For Expat housing
+  // Service Specific Fields
+  serviceType?: string; // e.g. 'Plumbing', 'Legal'
+  rateUnit?: 'hour' | 'day' | 'job' | 'consultation';
+  experienceLevel?: string;
+  // Item Specifics (Car details, Property features, etc.)
+  specifications?: Record<string, string | number>;
 }
 
 export interface CommunityPost {
@@ -77,6 +90,7 @@ export interface CommunityPost {
   likes: number;
   comments: number;
   isLiked?: boolean;
+  category?: 'general' | 'expat';
 }
 
 export interface CharityEvent {
@@ -89,6 +103,8 @@ export interface CharityEvent {
   category: string;
   description?: string;
   date?: string;
+  isExternal?: boolean; // For Google Grounding results
+  sourceUrl?: string;
 }
 
 export interface CurrencyRate {
@@ -129,4 +145,5 @@ export interface DeliveryRequest {
   distance: string;
   vehicle: string;
   status: 'Open' | 'In Progress';
+  requires_movers?: boolean;
 }

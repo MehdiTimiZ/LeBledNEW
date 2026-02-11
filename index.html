@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr" class="dark">
   <head>
@@ -24,10 +25,13 @@
             },
             colors: {
               // App Specific Theme
-              background: '#0f1117', // Main background
-              surface: '#181b21',    // Card background
-              border: '#2a2e37',     // Border color
+              background: 'var(--bg-main)', // Main background
+              surface: 'var(--bg-surface)', // Card background
+              surfaceAlt: 'var(--bg-surface-alt)', // Alternatice/Highlight
+              border: 'var(--border-color)', // Border color
               primary: '#6366f1',    // Indigo accent
+              mainText: 'var(--text-main)',
+              muted: 'var(--text-muted)',
             },
             animation: {
               'fade-in': 'fadeIn 0.5s ease-out',
@@ -53,9 +57,30 @@
       }
     </script>
     <style>
+      :root {
+        /* Light Mode Defaults */
+        --bg-main: #f1f5f9; /* slate-100 */
+        --bg-surface: #ffffff;
+        --bg-surface-alt: #f8fafc; /* slate-50 */
+        --border-color: #e2e8f0; /* slate-200 */
+        --text-main: #0f172a; /* slate-900 */
+        --text-muted: #64748b; /* slate-500 */
+      }
+
+      .dark {
+        /* Dark Mode Overrides */
+        --bg-main: #0f1117;
+        --bg-surface: #13151b;
+        --bg-surface-alt: #181b21;
+        --border-color: #2a2e37;
+        --text-main: #f3f4f6;
+        --text-muted: #9ca3af;
+      }
+
       body {
-        background-color: #0f1117;
-        color: #f3f4f6;
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        transition: background-color 0.3s ease, color 0.3s ease;
       }
       /* Custom Thin Scrollbar */
       ::-webkit-scrollbar {
@@ -66,11 +91,11 @@
         background: transparent;
       }
       ::-webkit-scrollbar-thumb {
-        background: #2a2e37;
+        background: var(--border-color);
         border-radius: 10px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #3f4552;
+        background: var(--text-muted);
       }
 
       /* Hide scrollbar for chrome/safari/opera */

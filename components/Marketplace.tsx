@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { MARKETPLACE_ITEMS, TRANSLATIONS } from '../constants';
-import { MapPin, MessageCircle, BadgeCheck, Star, RotateCcw, Info, Eye } from 'lucide-react';
+import { MapPin, MessageCircle, BadgeCheck, Star, RotateCcw, Info, Eye, Phone, Briefcase } from 'lucide-react';
 import { ProductDetailModal } from './ProductDetailModal';
 import { MarketplaceItem } from '../types';
 import { BaseCard, CardMedia, CardBody, CardFooter, CardLabel } from './BaseCard';
@@ -11,7 +11,7 @@ interface MarketplaceProps {
   searchQuery?: string;
   category?: string;
   wilaya?: string;
-  onContact?: (recipient: string) => void;
+  onContact?: (recipient: string, message?: string) => void;
   onBook?: () => void;
   viewMode?: 'grid' | 'list';
   // Fix: language should only be 'FR' | 'EN' to match TRANSLATIONS and ProductDetailModalProps
@@ -45,6 +45,17 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
   });
 
   const items = isWidget ? filteredItems.slice(0, 4) : filteredItems;
+
+  const handleWhatsApp = (e: React.MouseEvent, number: string | undefined, title: string) => {
+    e.stopPropagation();
+    if (number) {
+        const text = `Salam, I am interested in: ${title}`;
+        const url = `https://wa.me/${number.replace(/\D/g,'')}?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    } else {
+        alert("Seller has not provided a WhatsApp number.");
+    }
+  };
 
   return (
     <>
@@ -85,10 +96,11 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                       <Eye className="w-4 h-4 mr-2" /> {t.viewAd}
                     </button>
                     <button 
-                      onClick={(e) => { e.stopPropagation(); onContact && onContact(item.title); }}
+                      onClick={(e) => { e.stopPropagation(); onContact && onContact(item.seller.name, `Hi, regarding ${item.title}...`); }}
                       className="bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center transition-all shadow-lg shadow-indigo-500/20"
                     >
-                      <MessageCircle className="w-4 h-4 mr-2" /> {t.contact}
+                      {item.tag === 'Services' ? <Briefcase className="w-4 h-4 mr-2" /> : <MessageCircle className="w-4 h-4 mr-2" />}
+                      {item.tag === 'Services' ? 'Hire' : t.contact}
                     </button>
                   </div>
                 </div>
@@ -96,7 +108,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
             >
               <CardMedia src={item.image} alt={item.title} variant={viewMode}>
                 <div className="absolute top-3 left-3 flex flex-col space-y-2">
-                  <CardLabel color={item.tag === 'Medical Services' ? 'emerald' : 'indigo'}>
+                  <CardLabel color={item.tag === 'Medical Services' ? 'emerald' : item.tag === 'Services' ? 'red' : 'indigo'}>
                     {item.tag}
                   </CardLabel>
                   {item.condition && (
@@ -118,6 +130,9 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
 
                 <div className="text-2xl font-black text-white tracking-tighter mb-4">
                   {item.price}
+                  {item.rateUnit && (
+                    <span className="text-xs text-gray-500 ml-1 font-normal">/{item.rateUnit}</span>
+                  )}
                 </div>
 
                 <CardFooter>
@@ -135,7 +150,16 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
                       </div>
                     </div>
                   </div>
-                  <Info className="w-4 h-4 text-indigo-400 opacity-50 group-hover:opacity-100 transition-opacity" />
+                  <div className="flex space-x-2">
+                      <button 
+                        onClick={(e) => handleWhatsApp(e, item.seller.phone, item.title)}
+                        className="p-2 hover:bg-[#25D366]/20 text-gray-400 hover:text-[#25D366] rounded-full transition-colors"
+                        title="WhatsApp"
+                      >
+                        <Phone className="w-4 h-4" />
+                      </button>
+                      <Info className="w-4 h-4 text-indigo-400 opacity-50 group-hover:opacity-100 transition-opacity" />
+                  </div>
                 </CardFooter>
               </CardBody>
             </BaseCard>

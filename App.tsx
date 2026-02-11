@@ -20,6 +20,7 @@ import { MedicalServices } from './components/MedicalServices';
 import { DeliveryMoving } from './components/DeliveryMoving';
 import { Flexy } from './components/Flexy';
 import { Profile } from './components/Profile';
+import { ExpatsPage } from './components/ExpatsPage';
 import { AppView, UserRole, UserProfile, CharityEvent } from './types';
 import { MessageCircle } from 'lucide-react';
 import { Toast, ToastType } from './components/Toast';
@@ -35,6 +36,7 @@ const App: React.FC = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [initialCategory, setInitialCategory] = useState<string>('Vehicles');
   const [language, setLanguage] = useState<'FR' | 'EN'>('FR');
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   
   // Auth State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>({
@@ -50,9 +52,9 @@ const App: React.FC = () => {
   // New Global State for Interactivity
   const [toast, setToast] = useState<{message: string, type: ToastType} | null>(null);
   const [bookingItemName, setBookingItemName] = useState<string | null>(null);
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const [contactRecipient, setContactRecipient] = useState("Seller");
-  const [contactMessage, setContactMessage] = useState("");
+  
+  // Chat Context for "Contact Seller" actions
+  const [chatContext, setChatContext] = useState<{recipient: string, message: string} | undefined>(undefined);
   const [unreadCount, setUnreadCount] = useState(2); 
 
   // Lifted State for Persistence
@@ -85,6 +87,15 @@ const App: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isChatOpen, isSidebarOpen]);
 
+  // Handle Theme Change
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
   const notify = (message: string, type: ToastType = 'info') => {
     setToast({ message, type });
   };
@@ -95,9 +106,10 @@ const App: React.FC = () => {
       setIsAuthModalOpen(true);
       return;
     }
-    setContactRecipient(recipient);
-    setContactMessage(initialMsg);
-    setIsContactModalOpen(true);
+    // Switch to Chat View and pass context
+    setChatContext({ recipient, message: initialMsg || `Hi ${recipient}, I'm interested in your listing.` });
+    setCurrentView(AppView.CHAT);
+    notify(`Starting chat with ${recipient}`, 'success');
   };
 
   const handleBook = (itemName?: string) => {
@@ -116,36 +128,30 @@ const App: React.FC = () => {
     setIsAuthModalOpen(true); // Redirect to login screen (modal)
   };
 
-  const handleLogin = (role: UserRole) => {
-    let user: UserProfile;
-    if (role === 'admin') {
-      user = { id: 'admin1', name: 'Super Admin', email: 'admin@lebled.dz', role: 'admin', isVerified: true };
-    } else if (role === 'seller') {
-      user = { id: 'seller1', name: 'Yacine Tech Shop', email: 'shop@lebled.dz', role: 'seller', isVerified: true };
-    } else {
-      user = { id: 'user1', name: 'Karim User', email: 'karim@test.com', role: 'user', isVerified: false };
-    }
-      
+  const handleLogin = (user: UserProfile) => {
     setCurrentUser(user);
     setIsAuthModalOpen(false);
     
-    if (role === 'admin') {
+    if (user.role === 'super_admin') {
+      notify('Welcome, Super Admin! Full access granted.', 'success');
+      setCurrentView(AppView.ADMIN_PANEL);
+    } else if (user.role === 'admin') {
       notify('Welcome back, Admin! Accessing dashboard...', 'success');
       setCurrentView(AppView.ADMIN_PANEL);
-    } else if (role === 'seller') {
+    } else if (user.role === 'seller') {
       notify('Welcome back to your shop!', 'success');
       setCurrentView(AppView.SELLER_DASHBOARD);
     } else {
-      notify('Welcome back!', 'success');
+      notify(`Welcome back, ${user.name}!`, 'success');
     }
   };
 
   const handleViewChange = (view: AppView) => {
-    if (view === AppView.ADMIN_PANEL && currentUser?.role !== 'admin') {
+    if (view === AppView.ADMIN_PANEL && (currentUser?.role !== 'admin' && currentUser?.role !== 'super_admin')) {
       notify('Access Denied: Super User privileges required.', 'error');
       return;
     }
-    if (view === AppView.SELLER_DASHBOARD && currentUser?.role !== 'seller' && currentUser?.role !== 'admin') {
+    if (view === AppView.SELLER_DASHBOARD && currentUser?.role !== 'seller' && currentUser?.role !== 'admin' && currentUser?.role !== 'super_admin') {
       notify('Access Denied: Seller privileges required.', 'error');
       return;
     }
@@ -194,14 +200,18 @@ const App: React.FC = () => {
         return <Home notify={notify} onContact={handleContact} language={language} />;
       case AppView.CHAT:
         return currentUser ? (
-          <MessagingLayout onClose={() => setCurrentView(AppView.HOME)} currentUser={currentUser} />
+          <MessagingLayout 
+            onClose={() => setCurrentView(AppView.HOME)} 
+            currentUser={currentUser} 
+            initialContext={chatContext}
+          />
         ) : (
           <Home notify={notify} onContact={handleContact} language={language} />
         );
       case AppView.SELLER_DASHBOARD:
-        return (currentUser?.role === 'seller' || currentUser?.role === 'admin') ? <SellerDashboard onOpenCreate={() => openCreateListing()} /> : <Home notify={notify} onContact={handleContact} language={language} />;
+        return (currentUser?.role === 'seller' || currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <SellerDashboard onOpenCreate={() => openCreateListing()} /> : <Home notify={notify} onContact={handleContact} language={language} />;
       case AppView.ADMIN_PANEL:
-        return currentUser?.role === 'admin' ? <AdminPanel /> : <Home notify={notify} onContact={handleContact} language={language} />;
+        return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <AdminPanel /> : <Home notify={notify} onContact={handleContact} language={language} />;
       case AppView.SUBSCRIPTION:
         return <SubscriptionView />;
       case AppView.PROFILE:
@@ -216,7 +226,7 @@ const App: React.FC = () => {
           language={language}
         />;
       case AppView.SERVICES:
-        return <MedicalServices notify={notify} onBook={handleBook} onOpenCreate={() => openCreateListing('Medical Services')} language={language} />;
+        return <MedicalServices notify={notify} onBook={handleBook} onOpenCreate={() => openCreateListing('Medical Services')} language={language} onContact={handleContact} />;
       case AppView.DELIVERY:
         return <DeliveryMoving notify={notify} onContact={handleContact} />;
       case AppView.FLEXY:
@@ -224,15 +234,17 @@ const App: React.FC = () => {
       case AppView.VEHICLES:
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white capitalize">Véhicules</h2>
+            <h2 className="text-2xl font-bold text-mainText capitalize">Véhicules</h2>
             <Marketplace 
-              onContact={(recipient) => handleContact(recipient)} 
+              onContact={handleContact} 
               onBook={() => handleBook("Vehicle Listing")}
               language={language}
               onViewProfile={handleViewOtherProfile}
             />
           </div>
         );
+      case AppView.EXPATS:
+        return <ExpatsPage onContact={handleContact} notify={notify} />;
       case AppView.COMMUNITY:
         return <Community />;
       case AppView.CHARITY:
@@ -243,7 +255,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#0f1117] text-gray-100 font-sans selection:bg-indigo-500/30 overflow-hidden">
+    <div className="flex h-screen bg-background text-mainText font-sans selection:bg-indigo-500/30 overflow-hidden transition-colors duration-300">
       
       {/* Sidebar - Mini icons are persistent, expanded grows to overlay/push */}
       <div ref={sidebarRef}>
@@ -271,6 +283,8 @@ const App: React.FC = () => {
           language={language}
           setLanguage={setLanguage}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          theme={theme}
+          setTheme={setTheme}
         />
         
         <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pb-24 md:pb-8 pt-6 scroll-smooth">
@@ -348,14 +362,10 @@ const App: React.FC = () => {
         isOpen={!!bookingItemName}
         itemName={bookingItemName || undefined}
         onClose={() => setBookingItemName(null)}
-        onConfirm={() => notify('Appointment Request Sent!', 'success')}
-      />
-      <ContactModal 
-        isOpen={isContactModalOpen}
-        recipient={contactRecipient}
-        initialMessage={contactMessage}
-        onClose={() => setIsContactModalOpen(false)}
-        onSend={() => notify('Message sent successfully!', 'success')}
+        onConfirm={() => {
+            notify('Appointment Request Sent!', 'success');
+            handleContact("Service Provider", `Booking request for ${bookingItemName || 'service'}`);
+        }}
       />
     </div>
   );

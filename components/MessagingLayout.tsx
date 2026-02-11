@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Search, MoreVertical, MessageCircle, Send, X, Shield, User, Star, Bookmark } from 'lucide-react';
 import { UserProfile, MarketplaceItem } from '../types';
@@ -6,9 +7,13 @@ import { MARKETPLACE_ITEMS } from '../constants';
 interface MessagingLayoutProps {
   onClose?: () => void;
   currentUser?: UserProfile | null;
+  initialContext?: {
+    recipient: string;
+    message: string;
+  };
 }
 
-export const MessagingLayout: React.FC<MessagingLayoutProps> = ({ onClose, currentUser }) => {
+export const MessagingLayout: React.FC<MessagingLayoutProps> = ({ onClose, currentUser, initialContext }) => {
   const [activeTab, setActiveTab] = useState<'buying' | 'selling' | 'saved'>('buying');
   const [selectedChat, setSelectedChat] = useState<number>(1);
   const [messageText, setMessageText] = useState('');
@@ -17,11 +22,11 @@ export const MessagingLayout: React.FC<MessagingLayoutProps> = ({ onClose, curre
   const savedItems: MarketplaceItem[] = MARKETPLACE_ITEMS.slice(0, 3);
 
   // Data for Standard User
-  const userConversations = [
+  const [userConversations, setUserConversations] = useState([
     { id: 1, name: 'Amine Khelifi', message: 'Price is negotiable.', time: '2m', unread: 2, avatar: 'AK', role: 'Seller' },
     { id: 2, name: 'Sarah Benali', message: 'Can we meet at Sidi Yahia?', time: '1h', unread: 0, avatar: 'SB', role: 'Buyer' },
     { id: 3, name: 'LeBled Support', message: 'Your ticket #492 has been resolved.', time: '1d', unread: 0, avatar: 'LS', role: 'Admin', isOfficial: true },
-  ];
+  ]);
 
   // Data for Admin User
   const adminConversations = [
@@ -30,15 +35,39 @@ export const MessagingLayout: React.FC<MessagingLayoutProps> = ({ onClose, curre
     { id: 3, name: 'System Alert', message: 'High traffic detected in Oran region.', time: '4h', unread: 0, avatar: 'SYS', role: 'System', isSystem: true },
   ];
 
+  // Handle Initial Context (New Thread)
+  useEffect(() => {
+    if (initialContext && currentUser?.role !== 'admin') {
+      const existingChat = userConversations.find(c => c.name === initialContext.recipient);
+      
+      if (existingChat) {
+        setSelectedChat(existingChat.id);
+        // Pre-fill if needed, but usually we just open the chat
+      } else {
+        // Create new temporary chat for UI
+        const newChatId = Date.now();
+        const newChat = {
+          id: newChatId,
+          name: initialContext.recipient,
+          message: initialContext.message,
+          time: 'Now',
+          unread: 0,
+          avatar: initialContext.recipient.substring(0, 2).toUpperCase(),
+          role: 'Seller'
+        };
+        setUserConversations([newChat, ...userConversations]);
+        setSelectedChat(newChatId);
+        // Add the initial message to the message list logic below
+      }
+    }
+  }, [initialContext]);
+
   const conversations = currentUser?.role === 'admin' ? adminConversations : userConversations;
   const currentChatData = conversations.find(c => c.id === selectedChat) || conversations[0];
 
-  const [messages, setMessages] = useState([
-    { id: 1, text: currentUser?.role === 'admin' ? "Hello, I need help with my account." : "Salam Amine, I saw your iPhone listing. Is it still available?", isMe: false, time: "10:30 AM" },
-    { id: 2, text: currentUser?.role === 'admin' ? "Sure, what seems to be the problem?" : "Walikoum Salam! Yes it is. The price is slightly negotiable.", isMe: true, time: "10:32 AM" }
-  ]);
+  const [messages, setMessages] = useState<{id: number, text: string, isMe: boolean, time: string}[]>([]);
 
-  // Reset messages when switching mock users
+  // Reset messages when switching chat
   useEffect(() => {
      if(currentUser?.role === 'admin') {
          setMessages([
@@ -46,12 +75,19 @@ export const MessagingLayout: React.FC<MessagingLayoutProps> = ({ onClose, curre
              { id: 2, text: "Hello. Our systems detected suspicious activity regarding bulk messaging.", isMe: true, time: "10:35 AM" }
          ]);
      } else {
-         setMessages([
-             { id: 1, text: "Salam Amine, I saw your iPhone listing. Is it still available?", isMe: true, time: "10:30 AM" },
-             { id: 2, text: "Walikoum Salam! Yes it is. The price is slightly negotiable.", isMe: false, time: "10:32 AM" }
-         ]);
+         // If it's the newly created chat from context
+         if (initialContext && currentChatData.name === initialContext.recipient && messages.length === 0) {
+            setMessages([
+              { id: 1, text: initialContext.message, isMe: true, time: "Just now" }
+            ]);
+         } else if (messages.length === 0) {
+             setMessages([
+                 { id: 1, text: "Salam, is this item still available?", isMe: true, time: "10:30 AM" },
+                 { id: 2, text: "Walikoum Salam! Yes it is.", isMe: false, time: "10:32 AM" }
+             ]);
+         }
      }
-  }, [currentUser, selectedChat]);
+  }, [currentUser, selectedChat, initialContext, currentChatData]);
 
   const handleSend = () => {
     if (!messageText.trim()) return;
