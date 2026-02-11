@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { AppView } from '../types';
 import { Home, Car, Users, Heart, Stethoscope, Truck, Smartphone } from 'lucide-react';
@@ -12,7 +13,7 @@ export const CategoryNav: React.FC<CategoryNavProps> = ({ currentView, onChangeV
     { id: AppView.HOME, label: 'Home', icon: Home },
     { id: AppView.VEHICLES, label: 'Véhicules', icon: Car },
     { id: AppView.COMMUNITY, label: 'Communauté', icon: Users },
-    { id: AppView.CHARITY, label: 'Civil Mob', icon: Heart },
+    { id: AppView.CHARITY, label: 'Civil Alert', icon: Heart },
     { id: AppView.SERVICES, label: 'Santé', icon: Stethoscope },
     { id: AppView.DELIVERY, label: 'Livraison', icon: Truck },
     { id: AppView.FLEXY, label: 'Flexy', icon: Smartphone },

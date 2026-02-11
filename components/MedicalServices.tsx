@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Search, MapPin, Star, Filter, RotateCcw, Activity, Phone, ChevronDown, ChevronUp, Plus, ImageOff } from 'lucide-react';
 import { MEDICAL_SERVICES } from '../constants';
@@ -32,10 +33,10 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
     <div className="flex flex-col lg:flex-row gap-8 animate-fade-in pb-10">
       {/* Sidebar Filters */}
       <div className="w-full lg:w-64 flex-shrink-0 space-y-6">
-        <div className="bg-[#13151b] border border-[#2a2e37] rounded-2xl p-4 sticky top-20">
+        <div className="bg-[#13151b] border border-[#2a2e37] rounded-2xl p-4 sticky top-20 shadow-[0_0_15px_rgba(16,185,129,0.05)]">
            <div className="flex items-center justify-between mb-4">
              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Filtres</h3>
-             <Filter className="w-4 h-4 text-gray-500" />
+             <Filter className="w-4 h-4 text-green-500" />
            </div>
            
            <div className="space-y-4">
@@ -54,7 +55,7 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
                  <select 
                    value={type}
                    onChange={(e) => setType(e.target.value)}
-                   className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 appearance-none cursor-pointer"
+                   className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500 appearance-none cursor-pointer"
                  >
                    <option>Any</option>
                    <option>Doctor</option>
@@ -80,38 +81,39 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
       {/* Main Content */}
       <div className="flex-1 space-y-8">
         {/* Banner */}
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-900 via-[#0a2e1e] to-[#0f172a] border border-emerald-800/30 p-8 md:p-12 flex flex-col justify-center min-h-[300px] shadow-2xl">
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#064e3b] via-[#022c22] to-[#0f172a] border border-green-800/30 p-8 md:p-12 flex flex-col justify-center min-h-[300px] shadow-2xl">
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
           <div className="relative z-10 max-w-2xl">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">Santé & Soins à Domicile</h1>
-            <p className="text-lg text-emerald-100/70 mb-8 leading-relaxed">
-              Trouvez des infirmiers qualifiés, des services d'ambulance et louez du matériel médical près de chez vous en toute sérénité.
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">Health & Care</h1>
+            <p className="text-lg text-green-100/70 mb-8 leading-relaxed">
+              Find qualified doctors, nurses, and medical equipment rentals near you.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1 group">
                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                   <Search className="h-5 w-5 text-gray-400 group-focus-within:text-emerald-400 transition-colors" />
+                   <Search className="h-5 w-5 text-gray-400 group-focus-within:text-green-400 transition-colors" />
                  </div>
                  <input 
                    type="text" 
                    value={search}
                    onChange={(e) => setSearch(e.target.value)}
-                   className="block w-full pl-11 pr-4 py-4 bg-black/30 border border-white/10 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 backdrop-blur-xl transition-all"
-                   placeholder="Rechercher médecins, cliniques..."
+                   className="block w-full pl-11 pr-4 py-4 bg-black/30 border border-white/10 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 backdrop-blur-xl transition-all"
+                   placeholder="Search specialists, clinics..."
                  />
               </div>
               <button 
                 onClick={onOpenCreate}
-                className="bg-emerald-500 hover:bg-emerald-400 text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 shadow-xl shadow-emerald-900/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="bg-green-600 hover:bg-green-500 text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 shadow-xl shadow-green-900/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Plus className="w-5 h-5" />
-                <span>Créer une annonce</span>
+                <span>Create Listing</span>
               </button>
             </div>
           </div>
           {/* Decorative Background Element */}
           <div className="absolute right-0 bottom-0 opacity-10 transform translate-x-1/4 translate-y-1/4 pointer-events-none">
-            <Activity className="w-[500px] h-[500px] text-emerald-400" />
+            <Activity className="w-[500px] h-[500px] text-green-400" />
           </div>
         </div>
 
@@ -119,9 +121,9 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
         <div>
           <div className="flex items-center justify-between mb-8 px-2">
              <div className="flex items-center space-x-4">
-               <h2 className="text-2xl font-bold text-white">Résultats</h2>
-               <span className="bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold border border-emerald-500/20">
-                 {filteredServices.length} trouvés
+               <h2 className="text-2xl font-bold text-white">Available Services</h2>
+               <span className="bg-green-500/10 text-green-400 px-3 py-1 rounded-full text-xs font-bold border border-green-500/20">
+                 {filteredServices.length} found
                </span>
              </div>
           </div>
@@ -131,7 +133,7 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
               const isExpanded = expandedId === service.id;
               
               return (
-                <div key={service.id} className="group bg-[#13151b] rounded-3xl overflow-hidden border border-[#2a2e37] hover:border-[#3f4552] transition-all flex flex-col shadow-lg hover:shadow-2xl perspective-1000">
+                <div key={service.id} className="group bg-[#13151b] rounded-3xl overflow-hidden border border-[#2a2e37] hover:border-green-500/40 transition-all flex flex-col shadow-lg hover:shadow-[0_10px_40px_-10px_rgba(16,185,129,0.1)] perspective-1000">
                    <div className="relative aspect-[4/3] overflow-hidden bg-black/40">
                     <img 
                       src={service.image} 
@@ -149,9 +151,9 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
 
                     {/* Badge Overlays */}
                     <div className="absolute top-4 right-4 flex flex-col items-end space-y-2">
-                      <div className="px-3 py-1.5 bg-black/60 backdrop-blur-md text-emerald-400 text-[10px] font-bold rounded-xl border border-emerald-500/20 flex items-center uppercase tracking-widest shadow-lg">
-                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-2 animate-pulse"></span>
-                        Disponible
+                      <div className="px-3 py-1.5 bg-black/60 backdrop-blur-md text-green-400 text-[10px] font-bold rounded-xl border border-green-500/20 flex items-center uppercase tracking-widest shadow-lg">
+                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                        Available
                       </div>
                     </div>
                     
@@ -163,10 +165,10 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
                   <div className="p-6 flex-1 flex flex-col">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors leading-tight">{service.name}</h3>
+                        <h3 className="text-xl font-bold text-white group-hover:text-green-400 transition-colors leading-tight">{service.name}</h3>
                         <p className="text-sm text-gray-500 font-medium mt-1 uppercase tracking-tighter">{service.specialty} • {service.type}</p>
                       </div>
-                      <div className="flex items-center text-amber-400 text-xs font-black bg-amber-400/10 px-3 py-1.5 rounded-xl border border-amber-400/20">
+                      <div className="flex items-center text-green-400 text-xs font-black bg-green-500/10 px-3 py-1.5 rounded-xl border border-green-500/20">
                         <Star className="w-3.5 h-3.5 mr-1.5 fill-current" />
                         {service.rating}
                       </div>
@@ -175,11 +177,11 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
                     <div className={`mt-4 space-y-3 transition-all duration-300 overflow-hidden ${isExpanded ? 'max-h-60 opacity-100' : 'max-h-0 opacity-0'}`}>
                       <div className="h-px bg-[#2a2e37] w-full my-4" />
                       <div className="flex items-center text-sm text-gray-300 bg-[#0f1117] p-3 rounded-2xl border border-[#2a2e37]">
-                        <MapPin className="w-4 h-4 mr-3 text-emerald-500 shrink-0" />
+                        <MapPin className="w-4 h-4 mr-3 text-green-500 shrink-0" />
                         <span className="font-medium truncate">{service.location}</span>
                       </div>
                        <div className="flex items-center text-sm text-gray-300 bg-[#0f1117] p-3 rounded-2xl border border-[#2a2e37]">
-                        <Phone className="w-4 h-4 mr-3 text-emerald-500 shrink-0" />
+                        <Phone className="w-4 h-4 mr-3 text-green-500 shrink-0" />
                         <span className="font-medium">{service.contactNumber || "Contacter pour info"}</span>
                       </div>
                       <div className="grid grid-cols-2 gap-3 pt-2">
@@ -191,15 +193,15 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
                         </button>
                         <button 
                           onClick={() => onBook(service.name)}
-                          className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all"
+                          className="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl text-xs font-bold shadow-lg shadow-green-500/20 transition-all"
                         >
-                          Réserver
+                          Book Now
                         </button>
                       </div>
                     </div>
 
                     {!isExpanded && (
-                       <p className="mt-2 text-xs text-gray-500 italic">Cliquez pour voir les détails et contacter</p>
+                       <p className="mt-2 text-xs text-gray-500 italic">Click to view details and contact</p>
                     )}
 
                     <div className="mt-auto pt-6">
@@ -207,11 +209,11 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
                         onClick={() => toggleDetails(service.id)}
                         className={`w-full flex items-center justify-center space-x-2 py-3.5 rounded-2xl text-xs font-bold transition-all border ${
                            isExpanded 
-                             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
+                             ? 'bg-green-500/10 text-green-400 border-green-500/30' 
                              : 'bg-[#181b21] hover:bg-[#2a2e37] border-[#2a2e37] text-white'
                         }`}
                       >
-                         <span className="uppercase tracking-widest">{isExpanded ? 'Fermer' : 'Voir les Détails'}</span>
+                         <span className="uppercase tracking-widest">{isExpanded ? 'Close' : 'View Details'}</span>
                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                       </button>
                     </div>

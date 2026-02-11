@@ -68,6 +68,7 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
                   <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-500 pointer-events-none" />
                 </div>
              </div>
+             {/* Extra fields kept for completeness but Year/Fuel are priority as per prompt */}
              <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-500 uppercase">{t.transmission}</label>
                 <div className="relative">
@@ -88,6 +89,15 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
         return (
           <div className="grid grid-cols-2 gap-4 animate-fade-in p-4 bg-[#181b21] rounded-xl border border-[#2a2e37] mb-6">
              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase">{t.rooms}</label>
+                <input type="number" placeholder="3" className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm" />
+             </div>
+             <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase">{t.area}</label>
+                <input type="number" placeholder="120" className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm" />
+             </div>
+             {/* Extra fields kept */}
+             <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-500 uppercase">{t.propertyType}</label>
                 <div className="relative">
                   <select className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm appearance-none cursor-pointer">
@@ -96,23 +106,6 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
                      <option>Studio</option>
                      <option>Land</option>
                      <option>Commercial</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-500 pointer-events-none" />
-                </div>
-             </div>
-             <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase">{t.area} (m²)</label>
-                <input type="number" placeholder="100" className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm" />
-             </div>
-             <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-500 uppercase">{t.rooms}</label>
-                <div className="relative">
-                  <select className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm appearance-none cursor-pointer">
-                     <option>F1</option>
-                     <option>F2</option>
-                     <option>F3</option>
-                     <option>F4</option>
-                     <option>F5+</option>
                   </select>
                   <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-500 pointer-events-none" />
                 </div>
@@ -145,10 +138,11 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
              </div>
           </div>
          );
-      case 'Medical Services':
+      case 'Medical Services': // Kept for backward compatibility if user selects it manually
+      case 'Health':
          return (
-          <div className="bg-[#181b21] border border-emerald-500/30 rounded-xl p-4 space-y-4 mb-6 animate-fade-in">
-              <div className="flex items-center space-x-2 text-emerald-400 mb-2">
+          <div className="bg-[#181b21] border border-green-500/30 rounded-xl p-4 space-y-4 mb-6 animate-fade-in">
+              <div className="flex items-center space-x-2 text-green-400 mb-2">
                 <Calendar className="w-5 h-5" />
                 <h3 className="font-bold">{t.booking}</h3>
               </div>
@@ -162,7 +156,7 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
                       onClick={() => handleDayToggle(day)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                         availability.days.includes(day)
-                          ? 'bg-emerald-600 text-white'
+                          ? 'bg-green-600 text-white'
                           : 'bg-[#2a2e37] text-gray-400 hover:text-white'
                       }`}
                     >
@@ -181,7 +175,7 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
                       type="time" 
                       value={availability.startTime}
                       onChange={(e) => setAvailability({...availability, startTime: e.target.value})}
-                      className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-green-500"
                     />
                   </div>
                 </div>
@@ -193,7 +187,7 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
                       type="time" 
                       value={availability.endTime}
                       onChange={(e) => setAvailability({...availability, endTime: e.target.value})}
-                      className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl pl-10 pr-4 py-2.5 text-white focus:outline-none focus:border-green-500"
                     />
                   </div>
                 </div>
@@ -229,7 +223,7 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
             <label className="text-sm font-medium text-gray-300">{t.title}</label>
             <input 
               type="text" 
-              placeholder={category === 'Medical Services' ? "e.g. Cabinet Dr. Amrani" : "e.g. Peugeot 208 GT Line"}
+              placeholder={category === 'Health' || category === 'Medical Services' ? "e.g. Cabinet Dr. Amrani" : "e.g. Peugeot 208 GT Line"}
               className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
             />
           </div>
@@ -246,7 +240,7 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
                     <option value="Vehicles">Vehicles</option>
                     <option value="Real Estate">Real Estate</option>
                     <option value="Phones">Phones</option>
-                    <option value="Medical Services">Medical Services</option>
+                    <option value="Health">Health</option>
                     <option value="Clothing">Clothing</option>
                     <option value="Home">Home</option>
                     <option value="Computing">Computing</option>
@@ -263,7 +257,7 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
           {renderDynamicFields()}
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">{t.price} ({category === 'Medical Services' ? 'Consultation Fee' : 'Item Price'})</label>
+            <label className="text-sm font-medium text-gray-300">{t.price} ({category === 'Health' ? 'Consultation Fee' : 'Item Price'})</label>
             <input 
               type="number" 
               placeholder="0" 
@@ -284,7 +278,7 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
                  <Upload className="w-6 h-6 text-gray-400" />
                </div>
                <p className="text-sm text-gray-400">Click or drag to upload image</p>
-               <p className="text-[10px] text-gray-600 mt-2">Max 5MB per file • 5 pictures limit</p>
+               <p className="text--[10px] text-gray-600 mt-2">Max 5MB per file • 5 pictures limit</p>
              </div>
           </div>
 

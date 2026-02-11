@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Truck, Package, Calendar, MessageCircle, Filter, Plus, Search, User, AtSign, Phone, ChevronDown } from 'lucide-react';
 import { DELIVERY_REQUESTS } from '../constants';
@@ -69,13 +70,13 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
   };
 
   return (
-    <div className="flex flex-col xl:flex-row gap-8 animate-fade-in">
+    <div className="flex flex-col xl:flex-row gap-8 animate-fade-in pb-10">
       {/* Left Panel - Request Form */}
       <div className="w-full xl:w-[450px] flex-shrink-0 space-y-6">
-        <div className="bg-[#13151b] border border-[#2a2e37] rounded-2xl p-6 shadow-2xl">
+        <div className="bg-[#13151b] border border-[#2a2e37] rounded-2xl p-6 shadow-2xl shadow-amber-500/5">
           <div className="mb-6">
-            <div className="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center mb-4">
-              <Truck className="w-6 h-6 text-indigo-400" />
+            <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center mb-4 border border-amber-500/30">
+              <Truck className="w-6 h-6 text-amber-500" />
             </div>
             <h1 className="text-2xl font-bold text-white mb-2">Delivery & Moving</h1>
             <p className="text-gray-400">Post a request or offer your driving services.</p>
@@ -86,7 +87,7 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
             <button 
               onClick={() => setRole('requester')}
               className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${
-                role === 'requester' ? 'bg-[#6366f1] text-white shadow-lg' : 'text-gray-400 hover:text-white'
+                role === 'requester' ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' : 'text-gray-400 hover:text-white'
               }`}
             >
               I Need a Service
@@ -94,7 +95,7 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
             <button 
               onClick={() => setRole('provider')}
               className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${
-                role === 'provider' ? 'bg-[#6366f1] text-white shadow-lg' : 'text-gray-400 hover:text-white'
+                role === 'provider' ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' : 'text-gray-400 hover:text-white'
               }`}
             >
               I am a Driver
@@ -126,7 +127,7 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
                     <select 
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 pl-10 pr-8 text-white focus:outline-none focus:border-indigo-500 appearance-none cursor-pointer text-sm"
+                      className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 pl-10 pr-8 text-white focus:outline-none focus:border-amber-500 appearance-none cursor-pointer text-sm"
                     >
                       <option value="">Select Date</option>
                       {dateOptions.map((opt, i) => (
@@ -144,7 +145,7 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
                     <select 
                       value={vehicle}
                       onChange={(e) => setVehicle(e.target.value)}
-                      className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 px-4 text-white focus:outline-none focus:border-indigo-500 appearance-none cursor-pointer text-sm"
+                      className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 px-4 text-white focus:outline-none focus:border-amber-500 appearance-none cursor-pointer text-sm"
                     >
                       <option>Scooter</option>
                       <option>Van (Fourgon)</option>
@@ -161,13 +162,13 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
                  {role === 'requester' ? "Your Budget (DZD)" : "Rate per Day/Trip (DZD)"}
                </label>
                <div className="relative">
-                 <Package className="absolute left-3 top-3 w-4 h-4 text-amber-400" />
+                 <Package className="absolute left-3 top-3 w-4 h-4 text-amber-500" />
                  <input 
                    type="number" 
                    value={budget}
                    onChange={(e) => setBudget(e.target.value)}
                    placeholder="2000" 
-                   className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-indigo-500" 
+                   className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500" 
                  />
                </div>
              </div>
@@ -184,7 +185,7 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="05 50 12 34 56" 
-                      className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-indigo-500" 
+                      className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500" 
                     />
                   </div>
                 </div>
@@ -192,7 +193,7 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
                   <label className="text-xs font-bold text-gray-500 uppercase ml-1">Social Handle (Optional)</label>
                   <div className="relative">
                     <AtSign className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                    <input type="text" placeholder="@instagram_user" className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-indigo-500" />
+                    <input type="text" placeholder="@instagram_user" className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500" />
                   </div>
                 </div>
              </div>
@@ -200,7 +201,7 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
 
           <button 
             onClick={handlePost}
-            className="w-full bg-[#6366f1] hover:bg-[#4f46e5] text-white py-3.5 rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center space-x-2 mt-6"
+            className="w-full bg-amber-500 hover:bg-amber-400 text-black py-3.5 rounded-xl font-bold shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center space-x-2 mt-6"
           >
             <span>{role === 'requester' ? 'Post Request' : 'Post Offer'}</span>
             <Plus className="w-5 h-5" />
@@ -222,11 +223,11 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
 
          <div className="space-y-4">
            {posts.map((request) => (
-             <div key={request.id} className="bg-[#13151b] border border-[#2a2e37] rounded-2xl p-6 hover:border-[#3f4552] transition-all group animate-fade-in-up">
+             <div key={request.id} className="bg-[#13151b] border border-[#2a2e37] rounded-2xl p-6 hover:border-amber-500/30 transition-all group animate-fade-in-up">
                <div className="flex justify-between items-start mb-4">
                  <div className="flex items-center space-x-3">
                    <div className="w-10 h-10 rounded-xl bg-[#0f1117] border border-[#2a2e37] flex items-center justify-center">
-                     <Package className="w-5 h-5 text-indigo-400" />
+                     <Package className="w-5 h-5 text-amber-500" />
                    </div>
                    <div>
                      <h3 className="font-bold text-white text-lg">{request.type} Request</h3>
@@ -263,7 +264,7 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
                  </div>
                  <button 
                    onClick={() => handleChatClick(request.type, request.id)}
-                   className="bg-[#6366f1] hover:bg-[#4f46e5] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 shadow-lg shadow-indigo-500/20"
+                   className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center space-x-2"
                  >
                    <MessageCircle className="w-4 h-4" />
                    <span>Chat</span>

@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Plus, Globe, Heart, MapPin, MessageCircle, UserPlus, Sprout, Check, X, Gift, Search, Filter, Loader2 } from 'lucide-react';
+import { Plus, Globe, Heart, MapPin, MessageCircle, UserPlus, Sprout, Check, X, Gift, Search, Filter, Loader2, Megaphone, AlertTriangle } from 'lucide-react';
 import { CreateEventModal, NewEventData } from './CreateEventModal';
 import { CharityEvent } from '../types';
 import { BaseCard, CardMedia, CardBody, CardFooter, CardLabel } from './BaseCard';
@@ -38,16 +39,19 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
 
   return (
     <div className="space-y-8 animate-fade-in relative">
-      <div className="relative rounded-[3rem] overflow-hidden bg-gradient-to-r from-[#1a2e05] to-[#0f1a03] border border-[#2f400f] min-h-[350px] flex flex-col md:flex-row items-center p-12 gap-12 shadow-2xl">
+      <div className="relative rounded-[3rem] overflow-hidden bg-gradient-to-r from-[#450a0a] to-[#1a0505] border border-red-900/50 min-h-[350px] flex flex-col md:flex-row items-center p-12 gap-12 shadow-[0_0_50px_-10px_rgba(239,68,68,0.3)]">
         <div className="relative z-10 flex-1">
-          <CardLabel color="emerald" className="mb-4 inline-block">Civil Mob</CardLabel>
-          <h1 className="text-5xl font-black text-white mb-4 tracking-tighter">Civic Action Hub</h1>
-          <p className="text-xl text-green-200/70 mb-8 max-w-xl">Rejoignez des campagnes de quartier ou lancez votre propre mouvement solidaire.</p>
+          <CardLabel color="red" className="mb-4 inline-block bg-red-500/20 text-red-300 border-red-500/30">Civil Alert</CardLabel>
+          <h1 className="text-5xl font-black text-white mb-4 tracking-tighter flex items-center gap-3">
+             <AlertTriangle className="w-12 h-12 text-red-500" />
+             Civic Action Hub
+          </h1>
+          <p className="text-xl text-red-200/70 mb-8 max-w-xl">Urgent community needs. Join campaigns or launch a solidarity movement now.</p>
           <div className="flex flex-wrap gap-4">
-            <button onClick={() => setIsCreateModalOpen(true)} className="bg-white text-green-900 px-8 py-4 rounded-[2rem] font-black uppercase tracking-widest flex items-center gap-2 hover:scale-105 transition-all shadow-xl shadow-green-900/40">
-              <Plus className="w-5 h-5" /> Créer un Événement
+            <button onClick={() => setIsCreateModalOpen(true)} className="bg-red-600 hover:bg-red-500 text-white px-8 py-4 rounded-[2rem] font-black uppercase tracking-widest flex items-center gap-2 hover:scale-105 transition-all shadow-xl shadow-red-900/40">
+              <Megaphone className="w-5 h-5" /> Launch Campaign
             </button>
-            <button onClick={() => setIsScraping(!isScraping)} className="bg-green-950/50 border border-green-800/50 text-green-200 px-8 py-4 rounded-[2rem] font-black uppercase tracking-widest flex items-center gap-2 backdrop-blur-md transition-all">
+            <button onClick={() => setIsScraping(!isScraping)} className="bg-red-950/50 border border-red-800/50 text-red-200 px-8 py-4 rounded-[2rem] font-black uppercase tracking-widest flex items-center gap-2 backdrop-blur-md transition-all">
               {isScraping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />} Live Sync
             </button>
           </div>
@@ -61,9 +65,9 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
           const progress = Math.min(100, Math.round((event.joined / event.goal) * 100));
           
           return (
-            <BaseCard key={event.id}>
-              <CardMedia className="flex items-center justify-center bg-gradient-to-b from-[#181b21] to-[#13151b]">
-                <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center shadow-2xl border ${event.category === 'Environment' ? 'bg-green-500/20 border-green-500/30 text-green-500' : 'bg-pink-500/20 border-pink-500/30 text-pink-500'}`}>
+            <BaseCard key={event.id} className="border border-red-900/30 hover:border-red-500/50">
+              <CardMedia className="flex items-center justify-center bg-gradient-to-b from-[#2a0a0a] to-[#13151b]">
+                <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center shadow-2xl border ${event.category === 'Environment' ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-orange-500/10 border-orange-500/30 text-orange-500'}`}>
                   {event.category === 'Environment' ? <Sprout className="w-10 h-10" /> : <Gift className="w-10 h-10" />}
                 </div>
                 <div className="absolute top-4 right-4">
@@ -71,33 +75,33 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
                     <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
                   </button>
                 </div>
-                <CardLabel color="gray" className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md border-white/10">
+                <CardLabel color="red" className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md border-red-500/30 text-red-400">
                   {event.category}
                 </CardLabel>
               </CardMedia>
 
               <CardBody>
-                <h3 className="text-xl font-black text-white mb-2 group-hover:text-green-400 transition-colors leading-tight">{event.title}</h3>
+                <h3 className="text-xl font-black text-white mb-2 group-hover:text-red-400 transition-colors leading-tight">{event.title}</h3>
                 <div className="flex items-center text-[10px] font-black uppercase tracking-widest text-gray-500 mb-6">
-                  <MapPin className="w-3 h-3 mr-1 text-green-500" /> {event.location}
+                  <MapPin className="w-3 h-3 mr-1 text-red-500" /> {event.location}
                 </div>
 
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
-                    <span>{event.joined} Membres</span>
-                    <span>Objectif : {event.goal}</span>
+                    <span className="text-red-300">{event.joined} Volunteers</span>
+                    <span>Goal: {event.goal}</span>
                   </div>
                   <div className="h-2 bg-[#0f1117] rounded-full overflow-hidden border border-white/5">
-                    <div className="h-full bg-green-500 rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(34,197,94,0.4)]" style={{ width: `${progress}%` }}></div>
+                    <div className="h-full bg-red-600 rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(220,38,38,0.5)]" style={{ width: `${progress}%` }}></div>
                   </div>
                 </div>
 
                 <CardFooter>
                   <button 
                     onClick={() => handleJoinToggle(event.id)}
-                    className={`flex-1 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${isJoined ? 'bg-red-500/20 text-red-400 border border-red-500/20' : 'bg-green-600 text-white shadow-xl shadow-green-900/20'}`}
+                    className={`flex-1 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${isJoined ? 'bg-gray-800 text-gray-400 border border-gray-700' : 'bg-red-600 text-white shadow-xl shadow-red-900/30 hover:bg-red-500'}`}
                   >
-                    {isJoined ? <X className="w-3 h-3" /> : <UserPlus className="w-3 h-3" />} {isJoined ? 'Annuler' : 'Rejoindre'}
+                    {isJoined ? <X className="w-3 h-3" /> : <UserPlus className="w-3 h-3" />} {isJoined ? 'Leave' : 'Join Now'}
                   </button>
                   <button 
                     onClick={() => onContact(`Org: ${event.title}`)}

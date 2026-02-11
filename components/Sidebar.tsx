@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { LayoutDashboard, MessageCircle, Home, Car, Users, Heart, Stethoscope, Truck, Smartphone, ShieldAlert, LogOut, Settings, Sun, X } from 'lucide-react';
 import { AppView, UserProfile } from '../types';
@@ -20,9 +21,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
     { id: AppView.HOME, label: t.HOME, icon: Home },
     { id: AppView.VEHICLES, label: t.VEHICLES, icon: Car },
     { id: AppView.COMMUNITY, label: t.COMMUNITY, icon: Users },
-    { id: AppView.CHARITY, label: t.CHARITY, icon: Heart },
-    { id: AppView.SERVICES, label: t.SERVICES, icon: Stethoscope },
-    { id: AppView.DELIVERY, label: t.DELIVERY, icon: Truck },
+    { id: AppView.CHARITY, label: t.CHARITY, icon: Heart, color: 'text-red-500', activeBg: 'bg-red-500/20' },
+    { id: AppView.SERVICES, label: t.SERVICES, icon: Stethoscope, color: 'text-green-500', activeBg: 'bg-green-500/20' },
+    { id: AppView.DELIVERY, label: t.DELIVERY, icon: Truck, color: 'text-amber-500', activeBg: 'bg-amber-500/20' },
     { id: AppView.FLEXY, label: t.FLEXY, icon: Smartphone },
     { id: AppView.CHAT, label: t.CHAT, icon: MessageCircle },
   ];
@@ -65,6 +66,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
           {mainNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
+            const activeClass = item.activeBg ? `${item.activeBg} text-white` : 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/20';
+            const iconColor = isActive ? 'text-white' : (item.color || 'text-gray-500 group-hover:text-gray-300');
+
             return (
               <button
                 key={item.id}
@@ -76,13 +80,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
                 className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden
                   ${isOpen ? 'space-x-3' : 'justify-center'}
                   ${isActive
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/20'
+                    ? activeClass
                     : 'text-gray-400 hover:bg-[#181b21] hover:text-white'
                   }`}
               >
-                <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'}`} />
+                <Icon className={`w-5 h-5 shrink-0 ${iconColor}`} />
                 {isOpen && <span className="font-medium animate-fade-in whitespace-nowrap overflow-hidden">{item.label}</span>}
-                {!isOpen && isActive && <div className="absolute left-0 w-1 h-6 bg-indigo-500 rounded-r-full" />}
+                {!isOpen && isActive && <div className={`absolute left-0 w-1 h-6 rounded-r-full ${item.color?.replace('text-', 'bg-') || 'bg-indigo-500'}`} />}
               </button>
             );
           })}
