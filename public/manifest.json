@@ -1,0 +1,17 @@
+{
+    "name": "LeBled",
+    "short_name": "LeBled",
+    "description": "Plateforme communautaire algérienne connectant le patrimoine, le marché et la solidarité.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0f1117",
+    "theme_color": "#6366f1",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "https://lucide.dev/logo.light.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}
