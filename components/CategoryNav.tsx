@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { AppView } from '../types';
 import { Home, Car, Users, Heart, Stethoscope, Truck, Smartphone } from 'lucide-react';
 
@@ -32,7 +32,7 @@ export const CategoryNav: React.FC<CategoryNavProps> = ({ currentView, onChangeV
               className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 border ${
                 isActive
                   ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-900/30'
-                  : 'bg-[#181b21] text-gray-400 border-[#2a2e37] hover:bg-[#20242c] hover:text-gray-200'
+                  : 'bg-surface text-muted border-border hover:bg-surfaceAlt hover:text-mainText'
               }`}
             >
               <Icon className="w-4 h-4" />

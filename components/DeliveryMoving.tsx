@@ -22,6 +22,7 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
   const [budget, setBudget] = useState('');
   const [phone, setPhone] = useState('');
   const [requiresMovers, setRequiresMovers] = useState(false);
+  const [moverCount, setMoverCount] = useState<number>(1);
 
   // Generate date options for the next 30 days with "Today" and "Tomorrow" labels
   const dateOptions = Array.from({ length: 30 }, (_, i) => {
@@ -62,6 +63,7 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
     setBudget('');
     setPhone('');
     setRequiresMovers(false);
+    setMoverCount(1);
   };
 
   const handleChatClick = (type: string, id: string) => {
@@ -178,18 +180,34 @@ export const DeliveryMoving: React.FC<DeliveryMovingProps> = ({ notify, onContac
 
              {/* Professional Movers Checkbox */}
              {role === 'requester' && (
-               <div 
-                 className={`flex items-center p-3 rounded-xl border transition-all cursor-pointer ${requiresMovers ? 'bg-red-500/10 border-red-500' : 'bg-[#0f1117] border-[#2a2e37] hover:border-gray-500'}`}
-                 onClick={() => setRequiresMovers(!requiresMovers)}
-               >
-                 <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 ${requiresMovers ? 'bg-red-500 border-red-500' : 'border-gray-500'}`}>
-                   {requiresMovers && <CheckSquare className="w-3.5 h-3.5 text-white" />}
+               <div className="space-y-3">
+                 <div 
+                   className={`flex items-center p-3 rounded-xl border transition-all cursor-pointer ${requiresMovers ? 'bg-red-500/10 border-red-500' : 'bg-[#0f1117] border-[#2a2e37] hover:border-gray-500'}`}
+                   onClick={() => setRequiresMovers(!requiresMovers)}
+                 >
+                   <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3 ${requiresMovers ? 'bg-red-500 border-red-500' : 'border-gray-500'}`}>
+                     {requiresMovers && <CheckSquare className="w-3.5 h-3.5 text-white" />}
+                   </div>
+                   <div className="flex-1">
+                     <p className={`text-sm font-bold ${requiresMovers ? 'text-red-400' : 'text-gray-300'}`}>Request Professional Movers</p>
+                     <p className="text-[10px] text-gray-500">Check this for heavy lifting or full house moves</p>
+                   </div>
+                   <Users className={`w-5 h-5 ${requiresMovers ? 'text-red-500' : 'text-gray-600'}`} />
                  </div>
-                 <div className="flex-1">
-                   <p className={`text-sm font-bold ${requiresMovers ? 'text-red-400' : 'text-gray-300'}`}>Request Professional Movers</p>
-                   <p className="text-[10px] text-gray-500">Check this for heavy lifting or full house moves</p>
-                 </div>
-                 <Users className={`w-5 h-5 ${requiresMovers ? 'text-red-500' : 'text-gray-600'}`} />
+
+                 {requiresMovers && (
+                   <div className="flex items-center space-x-3 bg-[#0f1117] border border-[#2a2e37] rounded-xl p-3 animate-fade-in-up">
+                      <span className="text-xs font-bold text-gray-400 uppercase">Number of Movers:</span>
+                      <input 
+                        type="number" 
+                        min="1" 
+                        max="10" 
+                        value={moverCount}
+                        onChange={(e) => setMoverCount(parseInt(e.target.value))}
+                        className="w-20 bg-[#181b21] border border-[#2a2e37] rounded-lg px-2 py-1 text-white text-center font-bold focus:outline-none focus:border-red-500"
+                      />
+                   </div>
+                 )}
                </div>
              )}
 

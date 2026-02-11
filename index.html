@@ -59,12 +59,14 @@
     <style>
       :root {
         /* Light Mode Defaults */
-        --bg-main: #f1f5f9; /* slate-100 */
+        --bg-main: #f8fafc;
         --bg-surface: #ffffff;
-        --bg-surface-alt: #f8fafc; /* slate-50 */
-        --border-color: #e2e8f0; /* slate-200 */
-        --text-main: #0f172a; /* slate-900 */
-        --text-muted: #64748b; /* slate-500 */
+        --bg-surface-alt: #f1f5f9;
+        --border-color: #cbd5e1;
+        --text-main: #0f172a;
+        --text-muted: #475569;
+        --scrollbar-thumb: #cbd5e1;
+        --scrollbar-track: #f1f5f9;
       }
 
       .dark {
@@ -75,6 +77,8 @@
         --border-color: #2a2e37;
         --text-main: #f3f4f6;
         --text-muted: #9ca3af;
+        --scrollbar-thumb: #2a2e37;
+        --scrollbar-track: #13151b;
       }
 
       body {
@@ -82,33 +86,48 @@
         color: var(--text-main);
         transition: background-color 0.3s ease, color 0.3s ease;
       }
-      /* Custom Thin Scrollbar */
+
+      /* Global Scrollbar */
       ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
+        width: 8px;
+        height: 8px;
       }
       ::-webkit-scrollbar-track {
-        background: transparent;
+        background: var(--scrollbar-track);
       }
       ::-webkit-scrollbar-thumb {
-        background: var(--border-color);
+        background: var(--scrollbar-thumb);
         border-radius: 10px;
+        border: 2px solid var(--scrollbar-track);
       }
       ::-webkit-scrollbar-thumb:hover {
         background: var(--text-muted);
       }
 
-      /* Hide scrollbar for chrome/safari/opera */
+      /* Themed Custom Scrollbar for inner containers */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: var(--bg-surface-alt);
+        border-radius: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted);
+      }
+
       .no-scrollbar::-webkit-scrollbar {
         display: none;
       }
-      /* Hide scrollbar for IE, Edge and Firefox */
       .no-scrollbar {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
       }
       
-      /* Glassmorphism Utilities */
       .glass-panel {
         background: rgba(30, 41, 59, 0.7);
         backdrop-filter: blur(16px);
@@ -123,7 +142,6 @@
         border: 1px solid rgba(255, 255, 255, 0.08);
       }
 
-      /* 3D Flip Card Utilities */
       .perspective-1000 {
         perspective: 1000px;
       }

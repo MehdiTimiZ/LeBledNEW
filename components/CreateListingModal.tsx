@@ -26,6 +26,7 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
   });
   // Service specific state
   const [rateUnit, setRateUnit] = useState('job');
+  const [medicalType, setMedicalType] = useState('Doctor');
 
   const t = TRANSLATIONS[language]?.ui || TRANSLATIONS['FR'].ui;
 
@@ -47,6 +48,11 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
   };
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Determine button color based on category
+  const publishButtonColor = (category === 'Health' || category === 'Medical Services')
+    ? 'bg-green-600 hover:bg-green-500 shadow-green-500/20'
+    : 'bg-[#6366f1] hover:bg-[#4f46e5] shadow-indigo-500/20';
 
   const renderDynamicFields = () => {
     switch (category) {
@@ -207,6 +213,26 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
                 <Calendar className="w-5 h-5" />
                 <h3 className="font-bold">{t.booking}</h3>
               </div>
+
+              {/* Added Medical Service Type Dropdown */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase">Medical Service Type</label>
+                <div className="relative">
+                  <select 
+                    value={medicalType}
+                    onChange={(e) => setMedicalType(e.target.value)}
+                    className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-green-500 text-sm appearance-none cursor-pointer"
+                  >
+                    <option>Doctor</option>
+                    <option>Nurse</option>
+                    <option>Clinic</option>
+                    <option>Medical Equipment</option>
+                    <option>Ambulance</option>
+                    <option>Laboratory</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-500 pointer-events-none" />
+                </div>
+              </div>
               
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-500 uppercase">{t.availableDays}</label>
@@ -330,6 +356,21 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
           </div>
 
           <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <label className="text-sm font-medium text-gray-300">{t.description}</label>
+              <div className="flex items-center space-x-2 text-xs text-indigo-400 cursor-pointer hover:text-indigo-300">
+                <Wand2 className="w-3 h-3" />
+                <span>Use AI Assistant</span>
+              </div>
+            </div>
+            <textarea 
+              placeholder="Describe your service or item..."
+              rows={4}
+              className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors resize-none"
+            />
+          </div>
+
+          <div className="space-y-2">
              <div className="flex justify-between items-center">
                <label className="text-sm font-medium text-gray-300">Image</label>
                <div className="flex space-x-2 text-xs">
@@ -345,26 +386,11 @@ export const CreateListingModal: React.FC<CreateListingModalProps> = ({
                <p className="text--[10px] text-gray-600 mt-2">Max 5MB per file • 5 pictures limit</p>
              </div>
           </div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <label className="text-sm font-medium text-gray-300">{t.description}</label>
-              <div className="flex items-center space-x-2 text-xs text-indigo-400 cursor-pointer hover:text-indigo-300">
-                <Wand2 className="w-3 h-3" />
-                <span>Use AI Assistant</span>
-              </div>
-            </div>
-            <textarea 
-              placeholder="Describe your service or item..."
-              rows={4}
-              className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors resize-none"
-            />
-          </div>
         </div>
 
         {/* Footer */}
         <div className="p-6 border-t border-[#2a2e37] flex justify-end">
-           <button className="bg-[#6366f1] hover:bg-[#4f46e5] text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all">
+           <button className={`${publishButtonColor} text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all`}>
              {category === 'Services' ? 'Publish Service Offer' : t.publish}
            </button>
         </div>
