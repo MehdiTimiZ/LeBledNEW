@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
 import { SYSTEM_INSTRUCTION } from '../constants';
 
@@ -5,11 +6,12 @@ let client: GoogleGenAI | null = null;
 
 const getClient = (): GoogleGenAI => {
   if (!client) {
-    const apiKey = process.env.API_KEY;
+    // Safely access process.env to avoid ReferenceError in browsers that don't polyfill it
+    const apiKey = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : undefined;
+    
     if (!apiKey) {
       console.warn("API Key not found in environment variables");
-      // Fallback for demo purposes if env is missing in some environments, 
-      // though typically we expect it to be injected.
+      // Prevent crash if key is missing, though features will fail gracefully later
       throw new Error("API Key is missing");
     }
     client = new GoogleGenAI({ apiKey });
@@ -47,8 +49,8 @@ export interface LocationResult {
 }
 
 export const searchLocation = async (query: string): Promise<LocationResult> => {
-  const ai = getClient();
   try {
+    const ai = getClient();
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: `Find the specific location or address for: ${query}. Return a concise address.`,
@@ -79,6 +81,7 @@ export const searchLocation = async (query: string): Promise<LocationResult> => 
     return { text: text.trim(), mapLink, sourceTitle };
   } catch (error) {
     console.error("Gemini Location Search Error:", error);
+    // Return the original query as fallback text so the UI doesn't break
     return { text: query };
   }
 };

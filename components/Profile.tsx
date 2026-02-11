@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { MapPin, Calendar, Star, Package, MessageCircle, Share2, Settings, ShieldCheck, Grid, List, CheckCircle, Smartphone, BadgeCheck, X, Edit3 } from 'lucide-react';
-import { MARKETPLACE_ITEMS, MOCK_REVIEWS } from '../constants';
+import { MARKETPLACE_ITEMS, MOCK_REVIEWS, TRANSLATIONS } from '../constants';
 import { UserProfile, Review } from '../types';
 import { ReviewStats, ReviewList, WriteReviewModal } from './ReviewSystem';
 
@@ -9,12 +10,15 @@ interface ProfileProps {
   onEdit?: () => void;
   currentUser?: UserProfile | null;
   onClose?: () => void;
+  language?: 'FR' | 'EN';
 }
 
-export const Profile: React.FC<ProfileProps> = ({ onContact, onEdit, currentUser, onClose }) => {
+export const Profile: React.FC<ProfileProps> = ({ onContact, onEdit, currentUser, onClose, language = 'FR' }) => {
   const [activeTab, setActiveTab] = useState<'listings' | 'reviews' | 'about'>('listings');
   const [reviews, setReviews] = useState<Review[]>(MOCK_REVIEWS);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  
+  const t = TRANSLATIONS[language]?.ui || TRANSLATIONS['FR'].ui;
 
   // Mock data for the profile listings
   const listings = [
@@ -161,7 +165,7 @@ export const Profile: React.FC<ProfileProps> = ({ onContact, onEdit, currentUser
                   className="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center space-x-2 transition-all shadow-lg shadow-emerald-900/20"
                 >
                   <Settings className="w-5 h-5" />
-                  <span>Edit Profile</span>
+                  <span>{t.editProfile}</span>
                 </button>
               ) : (
                 <button 
@@ -169,14 +173,11 @@ export const Profile: React.FC<ProfileProps> = ({ onContact, onEdit, currentUser
                   className="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl font-bold flex items-center justify-center space-x-2 transition-all shadow-lg shadow-emerald-900/20"
                 >
                   <MessageCircle className="w-5 h-5" />
-                  <span>Message</span>
+                  <span>{t.message}</span>
                 </button>
               )}
               <button className="p-2.5 bg-[#181b21] border border-[#2a2e37] rounded-xl text-gray-400 hover:text-white hover:bg-[#2a2e37] transition-colors">
                 <Share2 className="w-5 h-5" />
-              </button>
-              <button className="p-2.5 bg-[#181b21] border border-[#2a2e37] rounded-xl text-gray-400 hover:text-white hover:bg-[#2a2e37] transition-colors">
-                <Settings className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -188,12 +189,12 @@ export const Profile: React.FC<ProfileProps> = ({ onContact, onEdit, currentUser
                  <div className="bg-[#181b21] border border-[#2a2e37] p-4 rounded-2xl text-center">
                    <Package className="w-6 h-6 text-emerald-400 mx-auto mb-2" />
                    <div className="text-2xl font-bold text-white">45</div>
-                   <div className="text-xs text-gray-500 font-medium">Items Sold</div>
+                   <div className="text-xs text-gray-500 font-medium">{t.itemsSold}</div>
                  </div>
                  <div className="bg-[#181b21] border border-[#2a2e37] p-4 rounded-2xl text-center">
                    <Star className="w-6 h-6 text-amber-400 mx-auto mb-2 fill-current" />
                    <div className="text-2xl font-bold text-white">{avgRating.toFixed(1)}</div>
-                   <div className="text-xs text-gray-500 font-medium">{reviews.length} Reviews</div>
+                   <div className="text-xs text-gray-500 font-medium">{reviews.length} {t.reviewCount}</div>
                  </div>
                </div>
                
@@ -213,7 +214,7 @@ export const Profile: React.FC<ProfileProps> = ({ onContact, onEdit, currentUser
                     <Smartphone className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-white font-bold text-lg">GSM Verified</h3>
+                    <h3 className="text-white font-bold text-lg">{t.verifiedId}</h3>
                     <p className="text-xs text-gray-400 mt-1 max-w-[200px]">Identity verified via GSM network authentication.</p>
                   </div>
                   <div className="pt-2">
@@ -238,7 +239,7 @@ export const Profile: React.FC<ProfileProps> = ({ onContact, onEdit, currentUser
                 }`}
               >
                 {activeTab === tab.toLowerCase() && <span className="mr-2 text-emerald-500">●</span>}
-                {tab}
+                {t[tab.toLowerCase() as keyof typeof t] || tab}
               </button>
             ))}
           </div>
@@ -300,14 +301,14 @@ export const Profile: React.FC<ProfileProps> = ({ onContact, onEdit, currentUser
       {activeTab === 'reviews' && (
          <div className="max-w-4xl mx-auto animate-fade-in-up">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-white">Reviews & Ratings</h2>
+              <h2 className="text-xl font-bold text-white">{t.reviews}</h2>
               {!onEdit && (
                 <button 
                   onClick={() => setIsReviewModalOpen(true)}
                   className="bg-[#2a2e37] hover:bg-[#343944] text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center transition-colors"
                 >
                   <Edit3 className="w-4 h-4 mr-2" />
-                  Write Review
+                  {t.writeReview}
                 </button>
               )}
             </div>
@@ -321,8 +322,8 @@ export const Profile: React.FC<ProfileProps> = ({ onContact, onEdit, currentUser
                  <div className="w-16 h-16 bg-[#181b21] rounded-full flex items-center justify-center mx-auto mb-4">
                     <Star className="w-8 h-8 text-gray-600" />
                  </div>
-                 <h3 className="text-lg font-bold text-white">No reviews yet</h3>
-                 <p className="text-gray-400 text-sm">Be the first to rate {profileName}!</p>
+                 <h3 className="text-lg font-bold text-white">{t.noReviews}</h3>
+                 <p className="text-gray-400 text-sm">{t.beFirst}</p>
                </div>
             )}
          </div>
@@ -331,16 +332,16 @@ export const Profile: React.FC<ProfileProps> = ({ onContact, onEdit, currentUser
       {/* 3. About Section (Placeholder) */}
       {activeTab === 'about' && (
          <div className="max-w-4xl mx-auto animate-fade-in-up bg-[#13151b] border border-[#2a2e37] rounded-2xl p-8">
-            <h3 className="text-xl font-bold text-white mb-4">About {profileName}</h3>
+            <h3 className="text-xl font-bold text-white mb-4">{t.about} {profileName}</h3>
             <div className="space-y-4 text-gray-300 leading-relaxed">
                <p>
                  Member since 2024. Active in Algiers and surrounding areas.
                  Specializes in electronics and computing equipment.
                </p>
                <div className="flex flex-wrap gap-2 mt-4">
-                  <span className="px-3 py-1 bg-[#181b21] rounded-lg border border-[#2a2e37] text-xs font-bold text-gray-400">Trusted Seller</span>
-                  <span className="px-3 py-1 bg-[#181b21] rounded-lg border border-[#2a2e37] text-xs font-bold text-gray-400">Fast Responder</span>
-                  <span className="px-3 py-1 bg-[#181b21] rounded-lg border border-[#2a2e37] text-xs font-bold text-gray-400">Verified ID</span>
+                  <span className="px-3 py-1 bg-[#181b21] rounded-lg border border-[#2a2e37] text-xs font-bold text-gray-400">{t.trustedSeller}</span>
+                  <span className="px-3 py-1 bg-[#181b21] rounded-lg border border-[#2a2e37] text-xs font-bold text-gray-400">{t.fastResponder}</span>
+                  <span className="px-3 py-1 bg-[#181b21] rounded-lg border border-[#2a2e37] text-xs font-bold text-gray-400">{t.verifiedId}</span>
                </div>
             </div>
          </div>

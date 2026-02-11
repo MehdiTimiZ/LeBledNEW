@@ -113,6 +113,7 @@ const App: React.FC = () => {
     setCurrentUser(null);
     setCurrentView(AppView.HOME);
     notify('Logged out successfully', 'info');
+    setIsAuthModalOpen(true); // Redirect to login screen (modal)
   };
 
   const handleLogin = (role: UserRole) => {
@@ -212,6 +213,7 @@ const App: React.FC = () => {
               setViewedProfile(null);
               setCurrentView(AppView.HOME);
           }} 
+          language={language}
         />;
       case AppView.SERVICES:
         return <MedicalServices notify={notify} onBook={handleBook} onOpenCreate={() => openCreateListing('Medical Services')} language={language} />;

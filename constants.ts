@@ -54,14 +54,25 @@ export const TRANSLATIONS = {
       kilometers: "Kilométrage",
       propertyType: "Type de bien",
       area: "Surface",
-      rooms: "Pièces",
+      rooms: "Pièces (Chambres)",
       floor: "Étage",
       brand: "Marque",
       condition: "État",
       booking: "Gestion des réservations",
       startTime: "Heure début",
       endTime: "Heure fin",
-      availableDays: "Jours disponibles"
+      availableDays: "Jours disponibles",
+      message: "Message",
+      editProfile: "Modifier le profil",
+      itemsSold: "Objets vendus",
+      trustedSeller: "Vendeur de confiance",
+      fastResponder: "Répond rapidement",
+      verifiedId: "Identité vérifiée",
+      about: "À propos",
+      listings: "Annonces",
+      noReviews: "Aucun avis pour le moment",
+      beFirst: "Soyez le premier à donner votre avis !",
+      reviewCount: "Avis"
     }
   },
   EN: {
@@ -116,14 +127,25 @@ export const TRANSLATIONS = {
       kilometers: "Kilometers",
       propertyType: "Property Type",
       area: "Area",
-      rooms: "Rooms",
+      rooms: "Rooms (Bedrooms)",
       floor: "Floor",
       brand: "Brand",
       condition: "Condition",
       booking: "Booking Management",
       startTime: "Start Time",
       endTime: "End Time",
-      availableDays: "Available Days"
+      availableDays: "Available Days",
+      message: "Message",
+      editProfile: "Edit Profile",
+      itemsSold: "Items Sold",
+      trustedSeller: "Trusted Seller",
+      fastResponder: "Fast Responder",
+      verifiedId: "Verified ID",
+      about: "About",
+      listings: "Listings",
+      noReviews: "No reviews yet",
+      beFirst: "Be the first to rate!",
+      reviewCount: "Reviews"
     }
   }
 };

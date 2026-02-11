@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface BaseCardProps {
@@ -34,7 +35,7 @@ export const BaseCard: React.FC<BaseCardProps> = ({
   if (backContent) {
     return (
       <div 
-        className={`relative perspective-1000 cursor-pointer ${variant === 'list' ? 'h-auto w-full' : 'h-full w-full'}`}
+        className={`relative perspective-1000 cursor-pointer w-full h-full`}
         onClick={onClick}
       >
         <div className={`
