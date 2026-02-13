@@ -51,7 +51,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({
     if (number) {
         const text = `Salam, I am interested in: ${title}`;
         const url = `https://wa.me/${number.replace(/\D/g,'')}?text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
+      window.open(url, '_blank', 'noopener,noreferrer');
     } else {
         alert("Seller has not provided a WhatsApp number.");
     }

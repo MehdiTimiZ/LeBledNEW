@@ -209,13 +209,13 @@ const App: React.FC = () => {
     // setCurrentUser(user); // Handled by onAuthStateChange
     setIsAuthModalOpen(false);
     
-    if (user.role === 'super_admin') {
+    if (user.role === 'SUPER_ADMIN') {
       notify('Welcome, Super Admin! Full access granted.', 'success');
       setCurrentView(AppView.ADMIN_PANEL);
-    } else if (user.role === 'admin') {
+    } else if (user.role === 'ADMIN') {
       notify('Welcome back, Admin! Accessing dashboard...', 'success');
       setCurrentView(AppView.ADMIN_PANEL);
-    } else if (user.role === 'seller') {
+    } else if (user.role === 'SELLER') {
       notify('Welcome back to your shop!', 'success');
       setCurrentView(AppView.SELLER_DASHBOARD);
     } else {
@@ -224,11 +224,11 @@ const App: React.FC = () => {
   };
 
   const handleViewChange = (view: AppView) => {
-    if (view === AppView.ADMIN_PANEL && (currentUser?.role !== 'admin' && currentUser?.role !== 'super_admin')) {
+    if (view === AppView.ADMIN_PANEL && (currentUser?.role !== 'ADMIN' && currentUser?.role !== 'SUPER_ADMIN')) {
       notify('Access Denied: Super User privileges required.', 'error');
       return;
     }
-    if (view === AppView.SELLER_DASHBOARD && currentUser?.role !== 'seller' && currentUser?.role !== 'admin' && currentUser?.role !== 'super_admin') {
+    if (view === AppView.SELLER_DASHBOARD && currentUser?.role !== 'SELLER' && currentUser?.role !== 'ADMIN' && currentUser?.role !== 'SUPER_ADMIN') {
       notify('Access Denied: Seller privileges required.', 'error');
       return;
     }
@@ -262,7 +262,7 @@ const App: React.FC = () => {
       id: 'other-user',
       name: name,
       email: 'contact@user.com',
-      role: 'seller',
+      role: 'SELLER',
       isVerified: true,
       avatar: `https://picsum.photos/200/200?seed=${name}`,
       cover: `https://picsum.photos/1200/400?seed=${name}`
@@ -286,9 +286,9 @@ const App: React.FC = () => {
             <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />
         );
       case AppView.SELLER_DASHBOARD:
-        return (currentUser?.role === 'seller' || currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <SellerDashboard onOpenCreate={() => openCreateListing()} currentUser={currentUser} /> : <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
+        return (currentUser?.role === 'SELLER' || currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') ? <SellerDashboard onOpenCreate={() => openCreateListing()} currentUser={currentUser} /> : <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
       case AppView.ADMIN_PANEL:
-        return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <AdminUserManagement /> : <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
+        return (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') ? <AdminUserManagement /> : <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
       case AppView.SUBSCRIPTION:
         return <SubscriptionView />;
       case AppView.PROFILE:
@@ -323,7 +323,7 @@ const App: React.FC = () => {
       case AppView.EXPATS:
         return <ExpatsPage onContact={handleContact} notify={notify} currentUser={currentUser} />;
       case AppView.ADMIN_PANEL:
-        return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <AdminUserManagement /> : <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
+        return (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') ? <AdminUserManagement /> : <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
       case AppView.COMMUNITY:
         return <Community />;
       case AppView.CHARITY:

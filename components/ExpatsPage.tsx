@@ -139,7 +139,7 @@ export const ExpatsPage: React.FC<ExpatsPageProps> = ({ onContact, notify, curre
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const canCreateService = currentUser && ['seller', 'admin', 'super_admin'].includes(currentUser.role);
+  const canCreateService = currentUser && ['SELLER', 'ADMIN', 'SUPER_ADMIN'].includes(currentUser.role);
 
   // Fallback services if DB is empty
   const fallbackServices = [

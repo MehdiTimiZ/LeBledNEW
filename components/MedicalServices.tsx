@@ -36,7 +36,7 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
   const handleWhatsApp = (number: string | undefined, name: string) => {
     if (number) {
         const url = `https://wa.me/${number.replace(/\D/g,'')}?text=Salam, inquiry about ${name}`;
-        window.open(url, '_blank');
+      window.open(url, '_blank', 'noopener,noreferrer');
     } else {
         notify('No WhatsApp number available', 'error');
     }

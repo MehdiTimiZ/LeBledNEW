@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Plus, Globe, Heart, MapPin, MessageCircle, UserPlus, Sprout, Check, X, Gift, Search, Filter, Loader2, Megaphone, AlertTriangle, ExternalLink } from 'lucide-react';
 import { CreateEventModal, NewEventData } from './CreateEventModal';
 import { CharityEvent } from '../types';
+import { safeWindowOpen } from '../utils/urlSafety';
 import { BaseCard, CardMedia, CardBody, CardFooter, CardLabel } from './BaseCard';
 import { findCharityEvents } from '../services/geminiService';
 
@@ -166,7 +167,7 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
                 <CardFooter>
                   {event.isExternal ? (
                       <button 
-                        onClick={() => window.open(event.sourceUrl, '_blank')}
+                      onClick={() => safeWindowOpen(event.sourceUrl)}
                         className="flex-1 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white"
                       >
                         <ExternalLink className="w-3 h-3" /> View Source

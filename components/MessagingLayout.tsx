@@ -106,7 +106,7 @@ export const MessagingLayout: React.FC<MessagingLayoutProps> = ({
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
               <h2 className="text-xl font-bold text-white">Messages</h2>
-              {currentUser?.role === 'admin' && <Shield className="w-4 h-4 text-red-400" />}
+              {currentUser?.role === 'ADMIN' && <Shield className="w-4 h-4 text-red-400" />}
             </div>
             <button onClick={onClose} className="md:hidden text-gray-400 hover:text-white">
               <X className="w-6 h-6" />

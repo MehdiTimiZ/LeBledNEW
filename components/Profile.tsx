@@ -52,7 +52,7 @@ export const Profile: React.FC<ProfileProps> = ({ onContact, onEdit, currentUser
   ];
 
   const profileName = currentUser?.name || "Guest User";
-  const profileRole = currentUser?.role === 'admin' ? "Super Admin" : currentUser?.role === 'seller' ? "Verified Seller" : "Community Member";
+  const profileRole = currentUser?.role === 'ADMIN' ? "Super Admin" : currentUser?.role === 'SELLER' ? "Verified Seller" : "Community Member";
   const isVerified = currentUser?.isVerified;
 
   // Calculate average rating
@@ -121,8 +121,8 @@ export const Profile: React.FC<ProfileProps> = ({ onContact, onEdit, currentUser
                    <img src={currentUser.avatar} alt="Profile" className="w-full h-full rounded-full object-cover" />
                 ) : (
                   <div className={`w-full h-full rounded-full flex items-center justify-center text-4xl font-bold text-white ${
-                    currentUser?.role === 'admin' ? 'bg-gradient-to-tr from-red-600 to-orange-600' :
-                    currentUser?.role === 'seller' ? 'bg-gradient-to-tr from-emerald-500 to-teal-600' :
+                      currentUser?.role === 'ADMIN' ? 'bg-gradient-to-tr from-red-600 to-orange-600' :
+                        currentUser?.role === 'SELLER' ? 'bg-gradient-to-tr from-emerald-500 to-teal-600' :
                     'bg-gradient-to-tr from-indigo-500 to-purple-600'
                   }`}>
                     {profileName.substring(0, 2).toUpperCase()}
@@ -142,8 +142,8 @@ export const Profile: React.FC<ProfileProps> = ({ onContact, onEdit, currentUser
                 {isVerified && <BadgeCheck className="w-6 h-6 text-blue-400 ml-2" />}
               </h1>
               <p className={`font-medium text-sm mb-2 ${
-                 currentUser?.role === 'admin' ? 'text-red-400' :
-                 currentUser?.role === 'seller' ? 'text-emerald-400' : 'text-gray-400'
+                currentUser?.role === 'ADMIN' ? 'text-red-400' :
+                  currentUser?.role === 'SELLER' ? 'text-emerald-400' : 'text-gray-400'
               }`}>
                 {profileRole}
               </p>

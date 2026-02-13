@@ -25,7 +25,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, notify }) =
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const isSuperAdmin = currentUser?.role === 'super_admin';
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
 
   useEffect(() => {
     fetchUsers();

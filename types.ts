@@ -19,7 +19,7 @@ export enum AppView {
   EXPATS = 'EXPATS'
 }
 
-export type UserRole = 'admin' | 'user' | 'seller' | 'super_admin';
+export type UserRole = 'ADMIN' | 'USER' | 'SELLER' | 'SUPER_ADMIN';
 
 export interface UserProfile {
   id: string;

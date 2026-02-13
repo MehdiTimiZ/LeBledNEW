@@ -96,7 +96,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <span className="text-xl font-bold text-mainText tracking-tight hidden sm:block">LeBled</span>
 
-            {currentUser?.role === 'admin' && (
+            {currentUser?.role === 'ADMIN' && (
                <span className="ml-2 px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30 uppercase hidden md:inline-block">
                  Admin
                </span>
@@ -199,9 +199,9 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <div className="relative">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg ${
-                    currentUser.role === 'admin' 
+                    currentUser.role === 'ADMIN' 
                       ? 'bg-gradient-to-tr from-red-600 to-orange-600' 
-                      : currentUser.role === 'seller' 
+                    : currentUser.role === 'SELLER' 
                         ? 'bg-gradient-to-tr from-emerald-500 to-teal-600'
                         : 'bg-gradient-to-tr from-indigo-500 to-purple-600'
                   }`}>
@@ -220,8 +220,8 @@ export const Header: React.FC<HeaderProps> = ({
                     <div className="flex justify-between items-center">
                        <p className="text-sm font-medium text-mainText truncate max-w-[140px]">{currentUser.name}</p>
                        <span className={`text-[10px] px-1.5 py-0.5 rounded border uppercase ${
-                         currentUser.role === 'admin' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 
-                         currentUser.role === 'seller' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                        currentUser.role === 'ADMIN' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                          currentUser.role === 'SELLER' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                          'bg-gray-700/10 text-muted border-border'
                        }`}>
                          {currentUser.role}
@@ -248,13 +248,13 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
 
                   <div className="py-1">
-                    {['admin', 'super_admin'].includes(currentUser.role) && (
+                    {['ADMIN', 'SUPER_ADMIN'].includes(currentUser.role) && (
                       <button onClick={() => handleNav(AppView.ADMIN_PANEL)} className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-surfaceAlt flex items-center space-x-2 font-medium">
                         <ShieldAlert className="w-4 h-4" />
                         <span>User Management</span>
                       </button>
                     )}
-                    {['admin', 'seller', 'super_admin'].includes(currentUser.role) && (
+                    {['ADMIN', 'SELLER', 'SUPER_ADMIN'].includes(currentUser.role) && (
                       <button onClick={() => handleNav(AppView.SELLER_DASHBOARD)} className="w-full text-left px-4 py-2.5 text-sm text-muted hover:bg-surfaceAlt hover:text-mainText flex items-center space-x-2">
                         <LayoutDashboard className="w-4 h-4" />
                         <span>Seller Dashboard</span>
