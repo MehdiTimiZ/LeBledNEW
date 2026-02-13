@@ -1,34 +1,43 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { supabase } from '@/supabase/client';
 import { Header } from './components/Header';
 import { CategoryNav } from './components/CategoryNav';
 import { Sidebar } from './components/Sidebar';
 import { BottomNav } from './components/BottomNav';
 import { Home } from './components/Home';
-import { Marketplace } from './components/Marketplace';
 import { Community } from './components/Community';
 import { Charity } from './components/Charity';
 import { BledChat } from './components/BledChat';
 import { MessagingLayout } from './components/MessagingLayout';
-import { SellerDashboard } from './components/SellerDashboard';
-import { AdminPanel } from './components/AdminPanel';
 import { SubscriptionView } from './components/SubscriptionView';
 import { CreateListingModal } from './components/CreateListingModal';
 import { EditProfileModal } from './components/EditProfileModal';
 import { AuthModal } from './components/AuthModal';
-import { MedicalServices } from './components/MedicalServices';
-import { DeliveryMoving } from './components/DeliveryMoving';
-import { Flexy } from './components/Flexy';
 import { Profile } from './components/Profile';
-import { ExpatsPage } from './components/ExpatsPage';
-import AdminUserManagement from './pages/AdminUserManagement';
 import { AppView, UserRole, UserProfile, CharityEvent } from './types';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Loader2 } from 'lucide-react';
 import { Toast, ToastType } from './components/Toast';
 import { BookingModal } from './components/BookingModal';
 import { ContactModal } from './components/ContactModal';
 import { CHARITY_EVENTS } from './constants';
+import { useNotifications } from './hooks/useNotifications';
+
+// Lazy-loaded heavy components for code splitting
+const Marketplace = lazy(() => import('./components/Marketplace').then(m => ({ default: m.Marketplace })));
+const AdminPanel = lazy(() => import('./components/AdminPanel').then(m => ({ default: m.AdminPanel })));
+const SellerDashboard = lazy(() => import('./components/SellerDashboard').then(m => ({ default: m.SellerDashboard })));
+const ExpatsPage = lazy(() => import('./components/ExpatsPage').then(m => ({ default: m.ExpatsPage })));
+const MedicalServices = lazy(() => import('./components/MedicalServices').then(m => ({ default: m.MedicalServices })));
+const DeliveryMoving = lazy(() => import('./components/DeliveryMoving').then(m => ({ default: m.DeliveryMoving })));
+const Flexy = lazy(() => import('./components/Flexy').then(m => ({ default: m.Flexy })));
+const AdminUserManagement = lazy(() => import('./pages/AdminUserManagement'));
+
+const LazyFallback = () => (
+  <div className="flex items-center justify-center h-64">
+    <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+  </div>
+);
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>(AppView.HOME);
@@ -37,7 +46,7 @@ const App: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [initialCategory, setInitialCategory] = useState<string>('Vehicles');
-  const [language, setLanguage] = useState<'FR' | 'EN'>('FR');
+  const [language, setLanguage] = useState<'FR' | 'EN' | 'AR'>('FR');
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   
@@ -46,6 +55,12 @@ const App: React.FC = () => {
   const [authLoading, setAuthLoading] = useState(true); // Loading until session checked
   const [viewedProfile, setViewedProfile] = useState<UserProfile | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // RTL support for Arabic
+  useEffect(() => {
+    document.documentElement.dir = language === 'AR' ? 'rtl' : 'ltr';
+    document.documentElement.lang = language === 'AR' ? 'ar' : language === 'EN' ? 'en' : 'fr';
+  }, [language]);
 
   // Initialize Auth
   useEffect(() => {
@@ -153,6 +168,13 @@ const App: React.FC = () => {
   const notify = (message: string, type: ToastType = 'info') => {
     setToast({ message, type });
   };
+
+  // Real-time notifications for incoming messages
+  useNotifications({
+    userId: currentUser?.id,
+    currentView,
+    onNotification: notify
+  });
 
   const handleContact = (recipient: string = "Seller", initialMsg: string = "") => {
     if (!currentUser) {
@@ -264,7 +286,7 @@ const App: React.FC = () => {
             <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />
         );
       case AppView.SELLER_DASHBOARD:
-        return (currentUser?.role === 'seller' || currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <SellerDashboard onOpenCreate={() => openCreateListing()} /> : <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
+        return (currentUser?.role === 'seller' || currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <SellerDashboard onOpenCreate={() => openCreateListing()} currentUser={currentUser} /> : <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
       case AppView.ADMIN_PANEL:
         return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <AdminUserManagement /> : <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
       case AppView.SUBSCRIPTION:
@@ -377,7 +399,9 @@ const App: React.FC = () => {
           <CategoryNav currentView={currentView} onChangeView={handleViewChange} />
           
           <div className="mt-2 md:mt-6">
-            {renderView()}
+            <Suspense fallback={<LazyFallback />}>
+              {renderView()}
+            </Suspense>
           </div>
         </main>
 

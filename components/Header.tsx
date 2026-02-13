@@ -10,8 +10,8 @@ interface HeaderProps {
   onLogin?: () => void;
   onLogout?: () => void;
   unreadCount?: number;
-  language?: 'FR' | 'EN';
-  setLanguage?: (lang: 'FR' | 'EN') => void;
+  language?: 'FR' | 'EN' | 'AR';
+  setLanguage?: (lang: 'FR' | 'EN' | 'AR') => void;
   onToggleSidebar?: () => void;
   theme?: 'dark' | 'light';
   setTheme?: (theme: 'dark' | 'light') => void;
@@ -169,6 +169,12 @@ export const Header: React.FC<HeaderProps> = ({
               className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${language === 'EN' ? 'bg-background text-mainText shadow-sm' : 'text-muted hover:text-mainText'}`}
             >
               EN
+            </button>
+            <button
+              onClick={() => setLanguage?.('AR')}
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${language === 'AR' ? 'bg-background text-mainText shadow-sm' : 'text-muted hover:text-mainText'}`}
+            >
+              عر
             </button>
           </div>
           

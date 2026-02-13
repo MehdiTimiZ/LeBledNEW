@@ -25,6 +25,12 @@ CREATE INDEX IF NOT EXISTS idx_expat_services_active ON public.expat_services(is
 -- RLS
 ALTER TABLE public.expat_services ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if re-running
+DROP POLICY IF EXISTS "Anyone can view active services" ON public.expat_services;
+DROP POLICY IF EXISTS "Sellers can create services" ON public.expat_services;
+DROP POLICY IF EXISTS "Owners can update services" ON public.expat_services;
+DROP POLICY IF EXISTS "Owners can delete services" ON public.expat_services;
+
 -- Anyone can view active services
 CREATE POLICY "Anyone can view active services"
   ON public.expat_services FOR SELECT
