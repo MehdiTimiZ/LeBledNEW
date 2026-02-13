@@ -42,6 +42,7 @@ const App: React.FC = () => {
   
   // Auth State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [authLoading, setAuthLoading] = useState(true); // Loading until session checked
   const [viewedProfile, setViewedProfile] = useState<UserProfile | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
@@ -51,6 +52,8 @@ const App: React.FC = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         fetchUserProfile(session.user.id, session.user.email!);
+      } else {
+        setAuthLoading(false);
       }
     });
 
@@ -94,6 +97,8 @@ const App: React.FC = () => {
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -305,6 +310,30 @@ const App: React.FC = () => {
     }
   };
 
+  // --- AUTH GATE: Show loading spinner or auth modal if not authenticated ---
+  if (authLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#0f1117]">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400 text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#0f1117]">
+        <AuthModal
+          isOpen={true}
+          onClose={() => { }}
+          onLogin={handleLogin}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-background text-mainText font-sans selection:bg-indigo-500/30 overflow-hidden transition-colors duration-300">
       
@@ -404,6 +433,7 @@ const App: React.FC = () => {
           setIsProfileModalOpen(false);
         }}
       />
+      {/* AuthModal kept for re-login scenarios (e.g., session expired) */}
       <AuthModal 
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 

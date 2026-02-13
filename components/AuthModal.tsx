@@ -115,58 +115,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }
     }
   };
 
-  const handleVerificationComplete = () => {
-    // Simulate Verification Success
-    let role: UserRole = 'user';
-    if (registerType === 'seller') role = 'seller';
-    if (email === SUPER_ADMIN_EMAIL) role = 'super_admin';
-
-    const newUser: UserProfile = {
-      id: 'new-' + Date.now(),
-      name: name,
-      email: email,
-      role: role,
-      phone: registerType === 'seller' ? phone : undefined,
-      phone_verified: registerType === 'seller',
-      isVerified: true,
-      createdAt: new Date().toISOString()
-    };
-
-    onLogin(newUser);
-    onClose();
+  const handleResendEmail = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.resend({ type: 'signup', email });
+      if (error) throw error;
+      setError(null);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Developer Quick Access Helper
-  const devLogin = (role: UserRole) => {
-    const mockUser: UserProfile = {
-      id: 'dev-' + role,
-      name: role === 'super_admin' ? 'Super Admin' : (role === 'seller' ? 'Seller Pro' : 'Regular User'),
-      email: role === 'super_admin' ? SUPER_ADMIN_EMAIL : `test-${role}@lebled.dz`,
-      role: role,
-      phone: role === 'seller' ? '0550000000' : undefined,
-      phone_verified: role === 'seller',
-      isVerified: true
-    };
-    onLogin(mockUser);
-    onClose();
-  };
+  // Check if modal can be closed (only if user is already logged in externally)
+  const canClose = false; // Auth modal should not be dismissible when shown
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
       />
       
       {/* Modal */}
       <div className="relative w-full max-w-md bg-[#13151b] border border-[#2a2e37] rounded-2xl shadow-2xl overflow-hidden animate-scale-up">
-        <button 
-          onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors z-10"
-        >
-          <X className="w-6 h-6" />
-        </button>
+        {/* Close button removed - auth is mandatory */}
 
         <div className="p-8">
           {/* Header */}
@@ -230,32 +205,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }
           {step === 'verify' ? (
             <div className="space-y-6 animate-fade-in">
               <div className="text-center">
-                <p className="text-white text-sm mb-1">
-                  We sent a code to your {registerType === 'seller' ? 'Phone' : 'Email'}
+                <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
+                  <Mail className="w-8 h-8 text-emerald-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Check your email</h3>
+                <p className="text-gray-400 text-sm mb-1">
+                  We sent a confirmation link to
                 </p>
                 <p className="text-indigo-400 font-mono font-bold text-lg">
-                  {registerType === 'seller' ? `+213 ${phone}` : email}
+                  {email}
                 </p>
-                <button onClick={() => setStep('form')} className="text-xs text-gray-500 hover:text-white mt-2 underline">Change</button>
-              </div>
-
-              <div className="flex justify-between gap-2">
-                {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <input 
-                    key={i}
-                    type="text" 
-                    maxLength={1}
-                    className="w-12 h-14 bg-[#0f1117] border border-[#2a2e37] rounded-xl text-center text-xl font-bold text-white focus:border-indigo-500 focus:outline-none"
-                  />
-                ))}
+                <p className="text-gray-500 text-xs mt-3">
+                  Click the link in the email to activate your account, then come back here and log in.
+                </p>
               </div>
 
               <button 
-                onClick={handleVerificationComplete}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/20 flex items-center justify-center space-x-2"
+                onClick={handleResendEmail}
+                disabled={loading}
+                className="w-full bg-[#2a2e37] hover:bg-[#343944] text-white py-3 rounded-xl font-bold transition-all border border-[#3f4552] disabled:opacity-50"
               >
-                <CheckCircle className="w-5 h-5" />
-                <span>Verify & Create Account</span>
+                {loading ? 'Sending...' : 'Resend Confirmation Email'}
+              </button>
+              <button
+                onClick={() => { setStep('form'); setMode('login'); }}
+                className="w-full text-indigo-400 hover:text-indigo-300 py-2 text-sm font-bold transition-all"
+              >
+                ← Back to Login
               </button>
             </div>
           ) : (
@@ -345,32 +321,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }
             </form>
           )}
 
-          {/* Developer Login Tools */}
-          <div className="pt-6 mt-6 border-t border-[#2a2e37]">
-            <p className="text-xs text-center text-gray-500 mb-3 uppercase font-bold tracking-wider">Dev Access (Quick Login)</p>
-            <div className="grid grid-cols-3 gap-2">
-              <button 
-                onClick={() => devLogin('super_admin')}
-                className="flex flex-col items-center justify-center bg-red-900/20 hover:bg-red-900/30 text-red-400 border border-red-500/20 py-2 rounded-xl text-[10px] font-bold transition-all"
-              >
-                <Lock className="w-4 h-4 mb-1" />
-                <span>Super Admin</span>
-              </button>
-              <button 
-                onClick={() => devLogin('seller')}
-                className="flex flex-col items-center justify-center bg-emerald-900/20 hover:bg-emerald-900/30 text-emerald-400 border border-emerald-500/20 py-2 rounded-xl text-[10px] font-bold transition-all"
-              >
-                <Store className="w-4 h-4 mb-1" />
-                <span>Seller</span>
-              </button>
-              <button 
-                onClick={() => devLogin('user')}
-                className="flex flex-col items-center justify-center bg-indigo-900/20 hover:bg-indigo-900/30 text-indigo-400 border border-indigo-500/20 py-2 rounded-xl text-[10px] font-bold transition-all"
-              >
-                <UserIcon className="w-4 h-4 mb-1" />
-                <span>User</span>
-              </button>
-            </div>
+          {/* Security Footer */}
+          <div className="pt-4 mt-4 border-t border-[#2a2e37]">
+            <p className="text-[10px] text-center text-gray-600">
+              🔒 Your data is secured with end-to-end encryption
+            </p>
           </div>
         </div>
       </div>
