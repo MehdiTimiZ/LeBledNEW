@@ -285,7 +285,7 @@ const App: React.FC = () => {
       case AppView.DELIVERY:
         return <DeliveryMoving notify={notify} onContact={handleContact} />;
       case AppView.FLEXY:
-        return <Flexy notify={notify} />;
+        return <Flexy notify={notify} currentUser={currentUser} />;
       case AppView.VEHICLES:
         return (
           <div className="space-y-6">

@@ -1,35 +1,60 @@
 import React, { useState } from 'react';
-import { Smartphone, Zap, History, ChevronRight } from 'lucide-react';
+import { Smartphone, Zap, History, ChevronRight, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { useFlexy } from '../hooks/useFlexy';
+import { UserProfile } from '../types';
 
 interface FlexyProps {
   notify: (msg: string, type: 'success' | 'error' | 'info') => void;
+  currentUser?: UserProfile | null;
 }
 
-export const Flexy: React.FC<FlexyProps> = ({ notify }) => {
+export const Flexy: React.FC<FlexyProps> = ({ notify, currentUser }) => {
   const [selectedOperator, setSelectedOperator] = useState<string>('djezzy');
   const [amount, setAmount] = useState<number>(100);
-  const [balance, setBalance] = useState<number>(1450);
   const [phoneNumber, setPhoneNumber] = useState('');
+  const { transactions, loading, recharge } = useFlexy(currentUser?.id);
 
   const operators = [
-    { id: 'djezzy', name: 'Djezzy', color: 'bg-red-600', hover: 'hover:bg-red-700', border: 'border-red-500/30' },
-    { id: 'mobilis', name: 'Mobilis', color: 'bg-green-600', hover: 'hover:bg-green-700', border: 'border-green-500/30' },
-    { id: 'ooredoo', name: 'Ooredoo', color: 'bg-yellow-600', hover: 'hover:bg-yellow-700', border: 'border-yellow-500/30' }
+    { id: 'djezzy', name: 'Djezzy', color: 'bg-red-600', hover: 'hover:bg-red-700', border: 'border-red-500/30', badge: 'bg-red-500/20 text-red-500' },
+    { id: 'mobilis', name: 'Mobilis', color: 'bg-green-600', hover: 'hover:bg-green-700', border: 'border-green-500/30', badge: 'bg-green-500/20 text-green-500' },
+    { id: 'ooredoo', name: 'Ooredoo', color: 'bg-yellow-600', hover: 'hover:bg-yellow-700', border: 'border-yellow-500/30', badge: 'bg-yellow-500/20 text-yellow-500' }
   ];
 
-  const handleRecharge = () => {
+  const quickAmounts = [100, 200, 500, 1000, 2000, 5000];
+
+  const handleRecharge = async () => {
     if (!phoneNumber || phoneNumber.length < 10) {
       notify('Please enter a valid phone number', 'error');
       return;
     }
-    if (balance < amount) {
-      notify('Insufficient balance!', 'error');
-      return;
-    }
 
-    setBalance(prev => prev - amount);
-    notify(`Successfully recharged ${amount} DA to ${phoneNumber}`, 'success');
+    const success = await recharge(selectedOperator, phoneNumber, amount);
+    if (success) {
+      notify(`Successfully recharged ${amount} DA to ${phoneNumber} via ${selectedOperator.charAt(0).toUpperCase() + selectedOperator.slice(1)}`, 'success');
+      setPhoneNumber('');
+      setAmount(100);
+    } else {
+      notify('Recharge failed. Please try again.', 'error');
+    }
   };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+  };
+
+  const getOperatorInfo = (op: string) => {
+    return operators.find(o => o.id === op) || operators[0];
+  };
+
+  // Total spent from real transactions
+  const totalSpent = transactions.reduce((sum, t) => sum + t.amount, 0);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
@@ -82,6 +107,21 @@ export const Flexy: React.FC<FlexyProps> = ({ notify }) => {
                  <label className="text-sm font-bold text-gray-400 uppercase">Amount (DA)</label>
                  <span className="text-indigo-400 font-bold">{amount} DA</span>
                </div>
+              {/* Quick Amount Buttons */}
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {quickAmounts.map((qa) => (
+                  <button
+                    key={qa}
+                    onClick={() => setAmount(qa)}
+                    className={`py-2 rounded-lg text-sm font-bold transition-all border ${amount === qa
+                        ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30'
+                        : 'bg-[#0f1117] text-gray-400 border-[#2a2e37] hover:border-gray-600'
+                      }`}
+                  >
+                    {qa.toLocaleString()}
+                  </button>
+                ))}
+              </div>
                <input 
                  type="range" 
                  min="100" 
@@ -101,29 +141,38 @@ export const Flexy: React.FC<FlexyProps> = ({ notify }) => {
 
              <button 
                onClick={handleRecharge}
-               className="w-full bg-white text-black py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors flex items-center justify-center space-x-2 shadow-lg shadow-white/10 mt-4"
+              disabled={loading}
+              className="w-full bg-white text-black py-4 rounded-xl font-bold text-lg hover:bg-gray-100 disabled:opacity-50 transition-colors flex items-center justify-center space-x-2 shadow-lg shadow-white/10 mt-4"
              >
-               <Zap className="w-5 h-5 fill-current" />
-               <span>Recharge Now</span>
+              {loading ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /><span>Processing...</span></>
+              ) : (
+                <><Zap className="w-5 h-5 fill-current" /><span>Recharge Now</span></>
+              )}
              </button>
            </div>
          </div>
 
-         {/* Right Side: History & Balance */}
+        {/* Right Side: Stats & History */}
          <div className="space-y-6">
            <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-6 text-white shadow-xl transition-all duration-300">
              <div className="flex justify-between items-start mb-8">
                <div>
-                 <p className="text-indigo-200 text-sm font-medium mb-1">Current Balance</p>
-                 <h2 className="text-4xl font-bold">{balance.toLocaleString()} DA</h2>
+                <p className="text-indigo-200 text-sm font-medium mb-1">Total Recharged</p>
+                <h2 className="text-4xl font-bold">{totalSpent.toLocaleString()} DA</h2>
                </div>
                <div className="bg-white/20 p-2 rounded-lg">
                  <Smartphone className="w-6 h-6 text-white" />
                </div>
              </div>
-             <div className="flex items-center text-sm text-indigo-100 bg-black/20 rounded-lg p-3">
-               <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
-               Wallet Active
+            <div className="flex items-center justify-between">
+              <div className="flex items-center text-sm text-indigo-100 bg-black/20 rounded-lg p-3">
+                <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                {transactions.length} Transactions
+              </div>
+              <span className="text-xs text-indigo-200">
+                {currentUser ? 'Synced with Supabase' : 'Sign in to save'}
+              </span>
              </div>
            </div>
 
@@ -133,27 +182,43 @@ export const Flexy: React.FC<FlexyProps> = ({ notify }) => {
                  <History className="w-4 h-4 mr-2 text-gray-400" />
                  Recent Transactions
                </h3>
-               <button className="text-xs text-indigo-400 hover:text-indigo-300 font-medium">View All</button>
+              <span className="text-xs text-gray-500">{transactions.length} total</span>
              </div>
              
              <div className="space-y-3">
-               {[1, 2, 3].map((i) => (
-                 <div key={i} className="flex items-center justify-between p-3 hover:bg-[#181b21] rounded-xl transition-colors cursor-pointer group">
-                   <div className="flex items-center space-x-3">
-                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold ${i === 1 ? 'bg-red-500/20 text-red-500' : i === 2 ? 'bg-yellow-500/20 text-yellow-500' : 'bg-green-500/20 text-green-500'}`}>
-                       {i === 1 ? 'Dj' : i === 2 ? 'Oo' : 'Mo'}
+              {transactions.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Zap className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                  <p className="text-sm">No transactions yet</p>
+                  <p className="text-xs text-gray-600 mt-1">Your recharge history will appear here</p>
+                </div>
+              ) : (
+                transactions.slice(0, 5).map((tx) => {
+                  const opInfo = getOperatorInfo(tx.operator);
+                  return (
+                    <div key={tx.id} className="flex items-center justify-between p-3 hover:bg-[#181b21] rounded-xl transition-colors group">
+                      <div className="flex items-center space-x-3">
+                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold ${opInfo.badge}`}>
+                           {tx.operator.substring(0, 2).toUpperCase()}
+                         </div>
+                         <div>
+                           <p className="text-white text-sm font-medium">{tx.phone_number}</p>
+                           <p className="text-xs text-gray-500">{formatDate(tx.created_at)}</p>
+                         </div>
+                       </div>
+                       <div className="flex items-center space-x-2">
+                         {tx.status === 'completed' ? (
+                           <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                         ) : (
+                           <XCircle className="w-3.5 h-3.5 text-red-500" />
+                         )}
+                         <span className="text-white font-mono font-bold">{tx.amount} DA</span>
+                         <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
+                       </div>
                      </div>
-                     <div>
-                       <p className="text-white text-sm font-medium">05 50 12 34 56</p>
-                       <p className="text-xs text-gray-500">Today, 10:30 AM</p>
-                     </div>
-                   </div>
-                   <div className="flex items-center space-x-2">
-                     <span className="text-white font-mono font-bold">200 DA</span>
-                     <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
-                   </div>
-                 </div>
-               ))}
+                   );
+                 })
+              )}
              </div>
            </div>
          </div>

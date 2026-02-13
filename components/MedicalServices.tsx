@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import { Search, MapPin, Star, Filter, RotateCcw, Activity, Phone, ChevronDown, ChevronUp, Plus, ImageOff, MessageCircle } from 'lucide-react';
+import { Search, MapPin, Star, Filter, RotateCcw, Activity, Phone, ChevronDown, ChevronUp, Plus, ImageOff, MessageCircle, Navigation, Loader2, Globe, Building2 } from 'lucide-react';
 import { MEDICAL_SERVICES } from '../constants';
 import { LocationInput } from './LocationInput';
+import { useNearbyServices, NearbyPlace } from '../hooks/useNearbyServices';
 
 interface MedicalServicesProps {
   notify: (msg: string, type: 'success' | 'error' | 'info') => void;
@@ -17,6 +18,8 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
   const [type, setType] = useState('Any');
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [nearbyRadius, setNearbyRadius] = useState(10);
+  const { places, loading: nearbyLoading, error: nearbyError, searchNearby } = useNearbyServices();
 
   const filteredServices = MEDICAL_SERVICES.filter(service => {
     const matchesLocation = !location || service.location.toLowerCase().includes(location.toLowerCase());
@@ -85,6 +88,37 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
              <RotateCcw className="w-4 h-4" />
              <span>Réinitialiser</span>
            </button>
+
+          {/* Find Nearby Section */}
+          <div className="mt-6 pt-6 border-t border-[#2a2e37]">
+            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Navigation className="w-4 h-4 text-green-500" />
+              Find Nearby
+            </h3>
+            <div className="space-y-3">
+              <select
+                value={nearbyRadius}
+                onChange={(e) => setNearbyRadius(Number(e.target.value))}
+                className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500 appearance-none cursor-pointer"
+              >
+                <option value={5}>Within 5 km</option>
+                <option value={10}>Within 10 km</option>
+                <option value={20}>Within 20 km</option>
+                <option value={50}>Within 50 km</option>
+              </select>
+              <button
+                onClick={() => searchNearby(nearbyRadius)}
+                disabled={nearbyLoading}
+                className="w-full bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center space-x-2 shadow-lg shadow-green-500/20"
+              >
+                {nearbyLoading ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /><span>Searching...</span></>
+                ) : (
+                  <><Navigation className="w-4 h-4" /><span>Find Near Me</span></>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -126,6 +160,91 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
             <Activity className="w-[500px] h-[500px] text-green-400" />
           </div>
         </div>
+
+        {/* Nearby Results */}
+        {(places.length > 0 || nearbyError) && (
+          <div className="bg-[#13151b] border border-green-500/30 rounded-3xl p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
+                  <Navigation className="w-5 h-5 text-green-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Nearby Health Services</h2>
+                  <p className="text-xs text-gray-500">
+                    {places.length} found within {nearbyRadius}km • Powered by OpenStreetMap
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {nearbyError && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm mb-4">
+                {nearbyError}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {places.map((place) => (
+                <div key={place.id} className="bg-[#0f1117] border border-[#2a2e37] rounded-2xl p-5 hover:border-green-500/40 transition-all group">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${place.type === 'hospital' ? 'bg-red-500/20 text-red-400' :
+                          place.type === 'pharmacy' ? 'bg-green-500/20 text-green-400' :
+                            place.type === 'dentist' ? 'bg-blue-500/20 text-blue-400' :
+                              'bg-indigo-500/20 text-indigo-400'
+                        }`}>
+                        {place.type === 'hospital' ? <Building2 className="w-5 h-5" /> :
+                          place.type === 'pharmacy' ? <Plus className="w-5 h-5" /> :
+                            <Activity className="w-5 h-5" />}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white text-sm group-hover:text-green-400 transition-colors">{place.name}</h4>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">{place.type}</span>
+                      </div>
+                    </div>
+                    <span className="text-xs font-mono font-bold text-green-400 bg-green-500/10 px-2 py-1 rounded-lg shrink-0">
+                      {place.distance} km
+                    </span>
+                  </div>
+
+                  {place.address && (
+                    <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
+                      <MapPin className="w-3 h-3 shrink-0" /> {place.address}
+                    </p>
+                  )}
+                  {place.phone && (
+                    <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
+                      <Phone className="w-3 h-3 shrink-0" /> {place.phone}
+                    </p>
+                  )}
+                  {place.openingHours && (
+                    <p className="text-[10px] text-gray-500 mb-3">🕐 {place.openingHours}</p>
+                  )}
+
+                  <div className="flex gap-2 mt-3">
+                    <a
+                      href={`https://www.openstreetmap.org/?mlat=${place.lat}&mlon=${place.lon}#map=17/${place.lat}/${place.lon}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 text-center bg-[#181b21] hover:bg-[#2a2e37] text-white py-2 rounded-xl text-xs font-bold border border-[#2a2e37] transition-all"
+                    >
+                      View Map
+                    </a>
+                    {place.phone && (
+                      <a
+                        href={`tel:${place.phone}`}
+                        className="flex-1 text-center bg-green-600/20 hover:bg-green-600/30 text-green-400 py-2 rounded-xl text-xs font-bold border border-green-500/30 transition-all"
+                      >
+                        Call
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Results */}
         <div>
@@ -210,8 +329,7 @@ export const MedicalServices: React.FC<MedicalServicesProps> = ({ notify, onBook
                       </div>
                       <button 
                           onClick={() => {
-                              onBook(service.name);
-                              // Also trigger unified inbox logic implicitly by considering it a "booking request"
+                          onBook(service.name);
                               if(onContact) onContact(service.name, `Booking Request for: ${service.name}`);
                           }}
                           className="w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl text-xs font-bold shadow-lg shadow-green-500/20 transition-all"
