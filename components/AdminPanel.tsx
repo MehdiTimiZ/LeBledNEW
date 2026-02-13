@@ -1,174 +1,297 @@
-import React, { useState } from 'react';
-import { Users, ShieldAlert, Activity, Search, MoreVertical, Ban, CheckCircle, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Users, ShieldAlert, Activity, Search, Ban, CheckCircle, Trash2, ArrowUpCircle, Crown, Filter, RefreshCw, Loader2 } from 'lucide-react';
+import { supabase } from '../supabase/client';
+import { UserProfile, UserRole } from '../types';
 
-interface MockUser {
-  id: number;
-  name: string;
+interface SupabaseUser {
+  id: string;
   email: string;
-  role: 'User' | 'Seller' | 'Admin';
-  status: 'Active' | 'Banned' | 'Pending';
-  joined: string;
-  reports: number;
+  full_name: string;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+  phone?: string;
 }
 
-export const AdminPanel: React.FC = () => {
-  const [users, setUsers] = useState<MockUser[]>([
-    { id: 1, name: 'Amine Khelifi', email: 'amine@example.com', role: 'Seller', status: 'Active', joined: 'Oct 2023', reports: 0 },
-    { id: 2, name: 'Bad Guy', email: 'scammer@example.com', role: 'User', status: 'Active', joined: 'Feb 2024', reports: 12 },
-    { id: 3, name: 'Sarah Benali', email: 'sarah@example.com', role: 'User', status: 'Pending', joined: 'Jan 2024', reports: 0 },
-    { id: 4, name: 'Yacine Tech', email: 'yacine@tech.dz', role: 'Seller', status: 'Banned', joined: 'Nov 2023', reports: 5 },
-  ]);
+interface AdminPanelProps {
+  currentUser: UserProfile | null;
+  notify: (msg: string, type: 'success' | 'error' | 'info') => void;
+}
 
+export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, notify }) => {
+  const [users, setUsers] = useState<SupabaseUser[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const handleAction = (id: number, action: 'ban' | 'verify' | 'delete') => {
-    setUsers(users.map((u): MockUser => {
-      if (u.id !== id) return u;
-      if (action === 'ban') return { ...u, status: 'Banned' };
-      if (action === 'verify') return { ...u, status: 'Active' };
-      return u;
-    }).filter(u => action !== 'delete' || u.id !== id));
+  const isSuperAdmin = currentUser?.role === 'super_admin';
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, email, full_name, role, is_active, created_at, phone')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (err: any) {
+      console.error('Failed to fetch users:', err);
+      notify('Failed to load users', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredUsers = users.filter(u => 
-    u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    u.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleToggleActive = async (userId: string, currentlyActive: boolean) => {
+    setActionLoading(userId);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_active: !currentlyActive })
+        .eq('id', userId);
+
+      if (error) throw error;
+      setUsers(users.map(u => u.id === userId ? { ...u, is_active: !currentlyActive } : u));
+      notify(`User ${!currentlyActive ? 'activated' : 'deactivated'}`, 'success');
+    } catch (err: any) {
+      notify('Action failed: ' + err.message, 'error');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleUpgradeToSeller = async (userId: string) => {
+    setActionLoading(userId);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: 'SELLER' })
+        .eq('id', userId);
+
+      if (error) throw error;
+      setUsers(users.map(u => u.id === userId ? { ...u, role: 'SELLER' } : u));
+      notify('User upgraded to Seller!', 'success');
+    } catch (err: any) {
+      notify('Upgrade failed: ' + err.message, 'error');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleAssignAdmin = async (userId: string) => {
+    if (!isSuperAdmin) return;
+    setActionLoading(userId);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: 'ADMIN' })
+        .eq('id', userId);
+
+      if (error) throw error;
+      setUsers(users.map(u => u.id === userId ? { ...u, role: 'ADMIN' } : u));
+      notify('User promoted to Admin!', 'success');
+    } catch (err: any) {
+      notify('Promotion failed: ' + err.message, 'error');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const filteredUsers = users.filter(u => {
+    const matchesSearch = u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = roleFilter === 'all' || u.role?.toLowerCase() === roleFilter.toLowerCase();
+    return matchesSearch && matchesRole;
+  });
+
+  const stats = {
+    total: users.length,
+    admins: users.filter(u => ['ADMIN', 'SUPER_ADMIN'].includes(u.role)).length,
+    sellers: users.filter(u => u.role === 'SELLER').length,
+    inactive: users.filter(u => !u.is_active).length,
+  };
+
+  const getRoleBadge = (role: string) => {
+    const r = role?.toUpperCase();
+    if (r === 'SUPER_ADMIN') return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+    if (r === 'ADMIN') return 'bg-red-500/10 text-red-400 border-red-500/20';
+    if (r === 'SELLER') return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+    return 'bg-gray-700/20 text-gray-400 border-gray-700/30';
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-between items-end">
+      <div className="flex justify-between items-end flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center">
             <ShieldAlert className="w-8 h-8 mr-3 text-red-500" />
-            Super User Panel
+            User Management
           </h1>
-          <p className="text-gray-400">Manage users, review reports, and oversee platform security.</p>
+          <p className="text-gray-400">Manage users, roles, and permissions.</p>
         </div>
+        <button
+          onClick={fetchUsers}
+          disabled={loading}
+          className="flex items-center gap-2 bg-[#13151b] border border-[#2a2e37] text-gray-300 px-4 py-2 rounded-xl hover:bg-[#1a1d25] transition-colors"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
+        </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-[#13151b] border border-[#2a2e37] rounded-2xl p-6">
-          <div className="flex justify-between items-start mb-4">
-             <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400">
-               <Users className="w-6 h-6" />
-             </div>
-             <span className="text-xs font-bold bg-green-500/20 text-green-400 px-2 py-1 rounded-lg">+24 today</span>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Users', value: stats.total, icon: Users, color: 'blue' },
+          { label: 'Admins', value: stats.admins, icon: Crown, color: 'red' },
+          { label: 'Sellers', value: stats.sellers, icon: Activity, color: 'emerald' },
+          { label: 'Inactive', value: stats.inactive, icon: Ban, color: 'amber' },
+        ].map((stat) => (
+          <div key={stat.label} className="bg-[#13151b] border border-[#2a2e37] rounded-2xl p-5">
+            <div className={`p-2.5 bg-${stat.color}-500/10 rounded-xl text-${stat.color}-400 w-fit mb-3`}>
+              <stat.icon className="w-5 h-5" />
+            </div>
+            <h3 className="text-gray-400 text-xs font-medium uppercase tracking-wide">{stat.label}</h3>
+            <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
           </div>
-          <h3 className="text-gray-400 text-sm font-medium">Total Users</h3>
-          <p className="text-2xl font-bold text-white mt-1">12,403</p>
-        </div>
-        <div className="bg-[#13151b] border border-[#2a2e37] rounded-2xl p-6">
-          <div className="flex justify-between items-start mb-4">
-             <div className="p-3 bg-red-500/10 rounded-xl text-red-400">
-               <ShieldAlert className="w-6 h-6" />
-             </div>
-             <span className="text-xs font-bold bg-red-500/20 text-red-400 px-2 py-1 rounded-lg">High Priority</span>
-          </div>
-          <h3 className="text-gray-400 text-sm font-medium">Pending Reports</h3>
-          <p className="text-2xl font-bold text-white mt-1">18</p>
-        </div>
-        <div className="bg-[#13151b] border border-[#2a2e37] rounded-2xl p-6">
-          <div className="flex justify-between items-start mb-4">
-             <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-400">
-               <Activity className="w-6 h-6" />
-             </div>
-             <span className="text-xs font-bold bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-lg">Healthy</span>
-          </div>
-          <h3 className="text-gray-400 text-sm font-medium">System Status</h3>
-          <p className="text-2xl font-bold text-white mt-1">99.9% Uptime</p>
-        </div>
+        ))}
       </div>
 
-      {/* User Management Table */}
+      {/* Filters & Search */}
       <div className="bg-[#13151b] border border-[#2a2e37] rounded-2xl overflow-hidden">
-        <div className="p-6 border-b border-[#2a2e37] flex flex-col md:flex-row justify-between items-center gap-4">
-           <h2 className="text-xl font-bold text-white">User Management</h2>
-           <div className="relative w-full md:w-64">
-             <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-500" />
-             <input 
-               type="text" 
-               placeholder="Search users..." 
-               value={searchTerm}
-               onChange={(e) => setSearchTerm(e.target.value)}
-               className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-2 pl-9 pr-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50"
-             />
-           </div>
+        <div className="p-5 border-b border-[#2a2e37] flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <Filter className="w-4 h-4 text-gray-500" />
+            <div className="flex bg-[#0f1117] rounded-xl p-1 border border-[#2a2e37]">
+              {['all', 'user', 'seller', 'admin'].map(role => (
+                <button
+                  key={role}
+                  onClick={() => setRoleFilter(role)}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all capitalize ${roleFilter === role
+                      ? 'bg-[#1e2028] text-white shadow-sm'
+                      : 'text-gray-500 hover:text-gray-300'
+                    }`}
+                >
+                  {role}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-2 pl-9 pr-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50"
+            />
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-400">
-            <thead className="bg-[#181b21] uppercase font-bold text-xs text-gray-500">
-              <tr>
-                <th className="px-6 py-4">User</th>
-                <th className="px-6 py-4">Role</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Joined</th>
-                <th className="px-6 py-4">Reports</th>
-                <th className="px-6 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#2a2e37]">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-[#181b21]/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div>
-                      <div className="font-bold text-white">{user.name}</div>
-                      <div className="text-xs">{user.email}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded text-xs font-bold ${
-                      user.role === 'Admin' ? 'bg-red-500/10 text-red-400' : 'bg-[#2a2e37] text-gray-300'
-                    }`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`flex items-center space-x-1.5 ${
-                      user.status === 'Active' ? 'text-green-400' : 
-                      user.status === 'Banned' ? 'text-red-400' : 'text-amber-400'
-                    }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${
-                        user.status === 'Active' ? 'bg-green-400' : 
-                        user.status === 'Banned' ? 'bg-red-400' : 'bg-amber-400'
-                      }`}></span>
-                      <span>{user.status}</span>
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">{user.joined}</td>
-                  <td className="px-6 py-4">
-                    {user.reports > 0 && (
-                      <span className="text-red-400 font-bold flex items-center">
-                        <ShieldAlert className="w-3 h-3 mr-1" />
-                        {user.reports}
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-8 h-8 text-gray-500 animate-spin" />
+          </div>
+        ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-gray-400">
+                <thead className="bg-[#181b21] uppercase font-bold text-xs text-gray-500">
+                  <tr>
+                    <th className="px-6 py-4">User</th>
+                    <th className="px-6 py-4">Role</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Joined</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#2a2e37]">
+                  {filteredUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                        No users found
+                      </td>
+                    </tr>
+                  ) : filteredUsers.map((user) => (
+                    <tr key={user.id} className="hover:bg-[#181b21]/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div>
+                        <div className="font-bold text-white">{user.full_name || 'No name'}</div>
+                        <div className="text-xs">{user.email}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded text-xs font-bold border ${getRoleBadge(user.role)}`}>
+                        {user.role || 'USER'}
                       </span>
-                    )}
-                    {user.reports === 0 && <span className="text-gray-600">-</span>}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex justify-end space-x-2">
-                       {user.status !== 'Active' && (
-                         <button onClick={() => handleAction(user.id, 'verify')} className="p-1.5 rounded bg-green-500/10 text-green-400 hover:bg-green-500/20" title="Verify/Unban">
-                           <CheckCircle className="w-4 h-4" />
-                         </button>
-                       )}
-                       {user.status !== 'Banned' && (
-                         <button onClick={() => handleAction(user.id, 'ban')} className="p-1.5 rounded bg-amber-500/10 text-amber-400 hover:bg-amber-500/20" title="Ban User">
-                           <Ban className="w-4 h-4" />
-                         </button>
-                       )}
-                       <button onClick={() => handleAction(user.id, 'delete')} className="p-1.5 rounded bg-red-500/10 text-red-400 hover:bg-red-500/20" title="Delete Data">
-                         <Trash2 className="w-4 h-4" />
-                       </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`flex items-center gap-1.5 ${user.is_active !== false ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          user.is_active !== false ? 'bg-green-400' : 'bg-red-400'
+                          }`}></span>
+                        {user.is_active !== false ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-xs">
+                      {user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex justify-end gap-1.5">
+                        {actionLoading === user.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                        ) : (
+                          <>
+                            {/* Toggle active/inactive */}
+                            <button
+                              onClick={() => handleToggleActive(user.id, user.is_active !== false)}
+                              className={`p-1.5 rounded text-xs ${user.is_active !== false
+                                  ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'
+                                  : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                                }`}
+                              title={user.is_active !== false ? 'Deactivate' : 'Activate'}
+                            >
+                              {user.is_active !== false ? <Ban className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                            </button>
+
+                            {/* Upgrade to Seller */}
+                            {user.role?.toUpperCase() === 'USER' && (
+                              <button
+                                onClick={() => handleUpgradeToSeller(user.id)}
+                                className="p-1.5 rounded bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+                                title="Upgrade to Seller"
+                              >
+                                <ArrowUpCircle className="w-4 h-4" />
+                              </button>
+                            )}
+
+                              {/* Assign Admin - SuperAdmin only */}
+                              {isSuperAdmin && !['ADMIN', 'SUPER_ADMIN'].includes(user.role?.toUpperCase()) && (
+                                <button
+                                  onClick={() => handleAssignAdmin(user.id)}
+                                  className="p-1.5 rounded bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                                  title="Promote to Admin"
+                                >
+                                  <Crown className="w-4 h-4" />
+                                </button>
+                              )}
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                </tbody>
+              </table>
+            </div>
+        )}
       </div>
     </div>
   );

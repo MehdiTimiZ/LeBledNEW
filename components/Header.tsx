@@ -237,13 +237,13 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
 
                   <div className="py-1">
-                    {currentUser.role === 'admin' && (
+                    {['admin', 'super_admin'].includes(currentUser.role) && (
                       <button onClick={() => handleNav(AppView.ADMIN_PANEL)} className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-surfaceAlt flex items-center space-x-2 font-medium">
                         <ShieldAlert className="w-4 h-4" />
-                        <span>Admin Panel</span>
+                        <span>User Management</span>
                       </button>
                     )}
-                    {['admin', 'seller'].includes(currentUser.role) && (
+                    {['admin', 'seller', 'super_admin'].includes(currentUser.role) && (
                       <button onClick={() => handleNav(AppView.SELLER_DASHBOARD)} className="w-full text-left px-4 py-2.5 text-sm text-muted hover:bg-surfaceAlt hover:text-mainText flex items-center space-x-2">
                         <LayoutDashboard className="w-4 h-4" />
                         <span>Seller Dashboard</span>
