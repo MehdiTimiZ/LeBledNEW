@@ -27,3 +27,5 @@ dist-ssr
 
 # Capacitor (generated in CI)
 android/
+# Admin scripts with secrets
+scripts/create-admin.mjs
