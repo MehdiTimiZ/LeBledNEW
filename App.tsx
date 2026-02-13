@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { supabase } from '@/supabase/client';
 import { Header } from './components/Header';
 import { CategoryNav } from './components/CategoryNav';
 import { Sidebar } from './components/Sidebar';
@@ -40,15 +41,61 @@ const App: React.FC = () => {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   
   // Auth State
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>({
-    id: 'u1',
-    name: 'Amine Khelifi',
-    email: 'amine@test.com',
-    role: 'user', 
-    isVerified: true
-  });
-  const [viewedProfile, setViewedProfile] = useState<UserProfile | null>(null); 
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [viewedProfile, setViewedProfile] = useState<UserProfile | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Initialize Auth
+  useEffect(() => {
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchUserProfile(session.user.id, session.user.email!);
+      }
+    });
+
+    // Listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        fetchUserProfile(session.user.id, session.user.email!);
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchUserProfile = async (userId: string, email: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (data) {
+        setCurrentUser({
+          id: data.id,
+          email: data.email || email,
+          name: email.split('@')[0], // Fallback name
+          role: (data.role as string).toLowerCase() as UserRole,
+          isVerified: true // Assumption for now
+        });
+      } else {
+        // Fallback if profile missing
+        setCurrentUser({
+          id: userId,
+          email: email,
+          name: email.split('@')[0],
+          role: 'user',
+          isVerified: true
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
 
   // New Global State for Interactivity
   const [toast, setToast] = useState<{message: string, type: ToastType} | null>(null);
@@ -122,15 +169,16 @@ const App: React.FC = () => {
     setBookingItemName(itemName || "Service");
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setCurrentUser(null);
     setCurrentView(AppView.HOME);
     notify('Logged out successfully', 'info');
-    setIsAuthModalOpen(true); // Redirect to login screen (modal)
+    // setIsAuthModalOpen(true); // Optional: Is this desired?
   };
 
   const handleLogin = (user: UserProfile) => {
-    setCurrentUser(user);
+    // setCurrentUser(user); // Handled by onAuthStateChange
     setIsAuthModalOpen(false);
     
     if (user.role === 'super_admin') {
@@ -143,7 +191,7 @@ const App: React.FC = () => {
       notify('Welcome back to your shop!', 'success');
       setCurrentView(AppView.SELLER_DASHBOARD);
     } else {
-      notify(`Welcome back, ${user.name}!`, 'success');
+      notify(`Welcome back!`, 'success');
     }
   };
 

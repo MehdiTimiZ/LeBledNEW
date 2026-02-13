@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { supabase } from '@/supabase/client';
 import { X, Facebook, Phone, ShieldCheck, Mail, Smartphone, Lock, User as UserIcon, Store, ArrowRight, CheckCircle } from 'lucide-react';
 import { UserProfile, UserRole } from '../types';
 
@@ -20,6 +21,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [verificationCode, setVerificationCode] = useState(new Array(6).fill(''));
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -31,24 +34,85 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }
     // Reset fields optional
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStep('verify');
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+            phone: phone
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      // If successful, maybe show verify step or just login
+      // For email signup, usually need email verification.
+      // For now, let's assume auto-login if configured, or tell user to check email.
+      if (data.session) {
+        const userProfile: UserProfile = {
+          id: data.user!.id,
+          email: data.user!.email!,
+          role: 'user', // Default, logic will fetch real role
+          name: name,
+          isVerified: false
+        };
+        onLogin(userProfile);
+      } else {
+    // Verification required
+        setStep('verify'); 
+      }
+
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate Login
-    const role = email === SUPER_ADMIN_EMAIL ? 'super_admin' : 'user';
-    const user: UserProfile = {
-        id: 'u-' + Date.now(),
-        name: name || 'Returned User',
-        email: email,
-        role: role,
-        isVerified: true
-    };
-    onLogin(user);
-    onClose();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        // Fetch real role for correct redirection/toast
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+
+        const userProfile: UserProfile = {
+          id: data.user.id,
+          email: data.user.email!,
+          role: (profile?.role || 'user').toLowerCase() as UserRole,
+          name: '', // Placeholder
+          isVerified: true
+        };
+        onLogin(userProfile);
+      }
+
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleVerificationComplete = () => {
@@ -113,6 +177,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }
             <h2 className="text-2xl font-bold text-white mb-2">
               {mode === 'login' ? 'Welcome Back' : (registerType === 'seller' ? 'Become a Seller' : 'Join Community')}
             </h2>
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg mb-4 text-sm font-bold">
+                {error}
+              </div>
+            )}
             <p className="text-gray-400 text-sm">
               {mode === 'login' 
                 ? 'Login to access your account' 
@@ -261,10 +330,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }
 
               <button 
                 type="submit"
-                className="w-full bg-[#2a2e37] hover:bg-[#343944] text-white py-3.5 rounded-xl font-bold transition-all border border-[#3f4552] flex items-center justify-center space-x-2 mt-4"
+                  disabled={loading}
+                  className="w-full bg-[#2a2e37] hover:bg-[#343944] text-white py-3.5 rounded-xl font-bold transition-all border border-[#3f4552] flex items-center justify-center space-x-2 mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span>{mode === 'login' ? 'Login' : (registerType === 'seller' ? 'Send Verification Code' : 'Create Account')}</span>
-                {mode === 'register' && <ArrowRight className="w-4 h-4" />}
+                  {loading ? (
+                    <span className="animate-pulse">Processing...</span>
+                  ) : (
+                    <>
+                        <span>{mode === 'login' ? 'Login' : (registerType === 'seller' ? 'Send Verification Code' : 'Create Account')}</span>
+                        {mode === 'register' && <ArrowRight className="w-4 h-4" />}
+                    </>
+                  )}
               </button>
             </form>
           )}
