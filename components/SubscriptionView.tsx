@@ -48,18 +48,18 @@ export const SubscriptionView: React.FC = () => {
           </div>
           <h3 className="text-xl font-bold text-white mb-2">Pro Seller</h3>
           <div className="flex items-baseline mb-6">
-            <span className="text-4xl font-bold text-white">2,500</span>
+            <span className="text-4xl font-bold text-white">1,200</span>
             <span className="text-gray-400 ml-2">DZD/mo</span>
           </div>
           <ul className="space-y-4 mb-8">
             <li className="flex items-center text-gray-300">
-              <Check className="w-5 h-5 text-indigo-400 mr-3" /> 20 Active Listings
+              <Check className="w-5 h-5 text-indigo-400 mr-3" /> 30 Active Listings
             </li>
             <li className="flex items-center text-gray-300">
               <Check className="w-5 h-5 text-indigo-400 mr-3" /> Priority Support
             </li>
             <li className="flex items-center text-gray-300">
-              <Check className="w-5 h-5 text-indigo-400 mr-3" /> Featured Listings (2x)
+              <Check className="w-5 h-5 text-indigo-400 mr-3" /> Weekly Category Spotlight
             </li>
             <li className="flex items-center text-gray-300">
               <Check className="w-5 h-5 text-indigo-400 mr-3" /> Analytics Dashboard
@@ -77,7 +77,7 @@ export const SubscriptionView: React.FC = () => {
           </div>
           <h3 className="text-xl font-bold text-white mb-2">Business</h3>
           <div className="flex items-baseline mb-6">
-            <span className="text-4xl font-bold text-white">8,000</span>
+            <span className="text-4xl font-bold text-white">4,000</span>
             <span className="text-gray-400 ml-2">DZD/mo</span>
           </div>
           <ul className="space-y-4 mb-8">
