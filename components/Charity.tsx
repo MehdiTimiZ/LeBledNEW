@@ -20,6 +20,22 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
   const [isScraping, setIsScraping] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const handleCreateEvent = (data: NewEventData) => {
+    const newEvent: CharityEvent = {
+      id: `campaign-${Date.now()}`,
+      title: data.title,
+      location: data.location,
+      joined: 0,
+      goal: data.maxParticipants,
+      progress: 0,
+      category: data.category,
+      description: data.description,
+    };
+    setEvents(prev => [newEvent, ...prev]);
+    setIsCreateModalOpen(false);
+    notify('Campaign launched successfully! 🚀', 'success');
+  };
+
   const handleJoinToggle = (id: string) => {
     const isJoined = joinedEvents.includes(id);
     if (isJoined) {
@@ -175,6 +191,12 @@ export const Charity: React.FC<CharityProps> = ({ notify, onContact, events, set
           );
         })}
       </div>
+
+      <CreateEventModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateEvent}
+      />
     </div>
   );
 };
