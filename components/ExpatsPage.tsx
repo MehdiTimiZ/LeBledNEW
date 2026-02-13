@@ -1,19 +1,53 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plane, Building, BookOpen, Users, Handshake, Globe, Clock, ShieldCheck, Phone, FileText, ChevronRight, Star, AlertTriangle, Languages, MapPin, BadgeCheck, MessageCircle } from 'lucide-react';
+import { Plane, Building, BookOpen, Users, Handshake, Globe, Clock, ShieldCheck, Phone, FileText, ChevronRight, Star, AlertTriangle, Languages, MapPin, BadgeCheck, MessageCircle, Plus, X, Loader2 } from 'lucide-react';
 import { EXPAT_HOUSING_ITEMS, COMMUNITY_POSTS, CURRENCY_RATES } from '../constants';
 import { BaseCard, CardMedia, CardBody, CardFooter, CardLabel } from './BaseCard';
-import { CommunityPost, MarketplaceItem } from '../types';
+import { CommunityPost, MarketplaceItem, UserProfile } from '../types';
+import { supabase } from '../supabase/client';
+
+interface ExpatService {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  category: string;
+  languages: string[];
+  location: string;
+  contact_info: string;
+  pricing: string;
+  is_verified: boolean;
+  is_active: boolean;
+  created_at: string;
+  profiles?: { full_name: string; email: string };
+}
+
+const SERVICE_CATEGORIES = ['Translation', 'Legal', 'Customs', 'Relocation', 'Real Estate', 'Administrative', 'Tourism', 'Other'] as const;
+const LANGUAGE_OPTIONS = ['EN', 'FR', 'AR', 'ES', 'DE', 'IT', 'ZH', 'TR', 'RU'];
 
 interface ExpatsPageProps {
   onContact: (recipient: string, message: string) => void;
   notify: (msg: string, type: 'success' | 'error' | 'info') => void;
+  currentUser?: UserProfile | null;
 }
 
-export const ExpatsPage: React.FC<ExpatsPageProps> = ({ onContact, notify }) => {
+export const ExpatsPage: React.FC<ExpatsPageProps> = ({ onContact, notify, currentUser }) => {
   const [activeTab, setActiveTab] = useState<'guide' | 'housing' | 'community' | 'services'>('guide');
   const [homeTime, setHomeTime] = useState(new Date());
-  
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [services, setServices] = useState<ExpatService[]>([]);
+  const [loadingServices, setLoadingServices] = useState(false);
+
+  // Form state
+  const [formTitle, setFormTitle] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+  const [formCategory, setFormCategory] = useState<string>('Translation');
+  const [formLanguages, setFormLanguages] = useState<string[]>(['EN']);
+  const [formLocation, setFormLocation] = useState('');
+  const [formContact, setFormContact] = useState('');
+  const [formPricing, setFormPricing] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
   // Mock User Home Timezone (e.g., London/GMT)
   useEffect(() => {
     const timer = setInterval(() => {
@@ -22,22 +56,105 @@ export const ExpatsPage: React.FC<ExpatsPageProps> = ({ onContact, notify }) => 
     return () => clearInterval(timer);
   }, []);
 
+  // Fetch services from Supabase
+  useEffect(() => {
+    if (activeTab === 'services') {
+      fetchServices();
+    }
+  }, [activeTab]);
+
+  const fetchServices = async () => {
+    setLoadingServices(true);
+    try {
+      const { data, error } = await supabase
+        .from('expat_services')
+        .select('*, profiles(full_name, email)')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        // If table doesn't exist yet, use fallback mock data
+        console.warn('Expat services table not ready:', error.message);
+        setServices([]);
+      } else {
+        setServices(data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch services:', err);
+    } finally {
+      setLoadingServices(false);
+    }
+  };
+
+  const handleCreateService = async () => {
+    if (!currentUser || !formTitle.trim() || !formDescription.trim()) {
+      notify('Please fill in all required fields.', 'error');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from('expat_services').insert({
+        user_id: currentUser.id,
+        title: formTitle.trim(),
+        description: formDescription.trim(),
+        category: formCategory,
+        languages: formLanguages,
+        location: formLocation.trim(),
+        contact_info: formContact.trim(),
+        pricing: formPricing.trim(),
+      });
+
+      if (error) throw error;
+
+      notify('Service created successfully!', 'success');
+      setShowCreateModal(false);
+      resetForm();
+      fetchServices();
+    } catch (err: any) {
+      notify(err.message || 'Failed to create service.', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormTitle('');
+    setFormDescription('');
+    setFormCategory('Translation');
+    setFormLanguages(['EN']);
+    setFormLocation('');
+    setFormContact('');
+    setFormPricing('');
+  };
+
+  const toggleLanguage = (lang: string) => {
+    setFormLanguages(prev =>
+      prev.includes(lang) ? prev.filter(l => l !== lang) : [...prev, lang]
+    );
+  };
+
   const formatTime = (date: Date, offset: number = 0) => {
     const d = new Date(date.getTime() + offset * 3600000);
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+
+  const canCreateService = currentUser && ['seller', 'admin', 'super_admin'].includes(currentUser.role);
+
+  // Fallback services if DB is empty
+  const fallbackServices = [
+    { id: '1', title: 'Karim Fixer', description: 'Paperwork Specialist — all administrative procedures', category: 'Administrative', languages: ['EN', 'FR', 'AR'], rating: 4.9, is_verified: true, profiles: { full_name: 'Karim Fixer', email: '' } },
+    { id: '2', title: 'Sarah Translat', description: 'Certified Translator — official documents', category: 'Translation', languages: ['EN', 'AR'], rating: 5.0, is_verified: true, profiles: { full_name: 'Sarah Translat', email: '' } },
+    { id: '3', title: 'Algiers Relo', description: 'Full Move Agency — end-to-end relocation', category: 'Relocation', languages: ['EN', 'FR', 'ES'], rating: 4.8, is_verified: true, profiles: { full_name: 'Algiers Relo', email: '' } },
+  ];
+
+  const displayServices = services.length > 0 ? services : fallbackServices;
 
   const navItems = [
     { id: 'guide', label: 'Admin Guide', icon: BookOpen },
     { id: 'housing', label: 'Premium Housing', icon: Building },
     { id: 'community', label: 'Expat Forum', icon: Users },
     { id: 'services', label: 'Relocation Help', icon: Handshake },
-  ];
-
-  const services = [
-    { id: 1, name: 'Karim Fixer', role: 'Paperwork Specialist', languages: ['EN', 'FR', 'AR'], rating: 4.9, verified: true },
-    { id: 2, name: 'Sarah Translat', role: 'Certified Translator', languages: ['EN', 'AR'], rating: 5.0, verified: true },
-    { id: 3, name: 'Algiers Relo', role: 'Full Move Agency', languages: ['EN', 'FR', 'ES'], rating: 4.8, verified: true },
   ];
 
   return (
@@ -230,39 +347,71 @@ export const ExpatsPage: React.FC<ExpatsPageProps> = ({ onContact, notify }) => 
 
         {/* SERVICES TAB */}
         {activeTab === 'services' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up">
-             {services.map((service) => (
-               <div key={service.id} className="bg-[#13151b] border border-slate-700 rounded-3xl p-6 hover:border-teal-500/50 transition-all">
-                  <div className="flex justify-between items-start mb-4">
-                     <div className="flex items-center gap-3">
+          <div className="animate-fade-in-up">
+            {/* Create Service Button (Seller only) */}
+            {canCreateService && (
+              <div className="mb-6 flex justify-end">
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="flex items-center space-x-2 bg-teal-600 hover:bg-teal-500 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-teal-500/20"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Create Service</span>
+                </button>
+              </div>
+            )}
+
+            {loadingServices ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {displayServices.map((service: any) => (
+                  <div key={service.id} className="bg-[#13151b] border border-slate-700 rounded-3xl p-6 hover:border-teal-500/50 transition-all">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center font-bold text-white">
-                           {service.name.substring(0, 2)}
+                          {(service.profiles?.full_name || service.title).substring(0, 2).toUpperCase()}
                         </div>
                         <div>
-                           <h4 className="font-bold text-white flex items-center">
-                             {service.name}
-                             {service.verified && <BadgeCheck className="w-4 h-4 text-blue-400 ml-1" />}
-                           </h4>
-                           <p className="text-xs text-teal-400 font-bold uppercase tracking-wider">{service.role}</p>
+                          <h4 className="font-bold text-white flex items-center">
+                            {service.title}
+                            {service.is_verified && <BadgeCheck className="w-4 h-4 text-blue-400 ml-1" />}
+                          </h4>
+                          <p className="text-xs text-teal-400 font-bold uppercase tracking-wider">{service.category}</p>
                         </div>
-                     </div>
-                     <div className="flex items-center bg-yellow-500/10 px-2 py-1 rounded-lg text-yellow-400 text-xs font-bold">
-                        <Star className="w-3 h-3 mr-1 fill-current" /> {service.rating}
-                     </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mb-6">
-                     {service.languages.map(lang => (
+                      </div>
+                      {service.rating && (
+                        <div className="flex items-center bg-yellow-500/10 px-2 py-1 rounded-lg text-yellow-400 text-xs font-bold">
+                          <Star className="w-3 h-3 mr-1 fill-current" /> {service.rating}
+                        </div>
+                      )}
+                    </div>
+
+                    {service.description && (
+                      <p className="text-slate-400 text-sm mb-4 line-clamp-2">{service.description}</p>
+                    )}
+
+                    {service.pricing && (
+                      <p className="text-sm text-teal-300 font-mono mb-3">{service.pricing}</p>
+                    )}
+
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {(service.languages || []).map((lang: string) => (
                         <span key={lang} className="text-[10px] font-bold bg-slate-800 text-slate-400 px-2 py-1 rounded border border-slate-700">{lang}</span>
-                     ))}
+                      ))}
+                    </div>
+                    <button 
+                      onClick={() => onContact(service.profiles?.full_name || service.title, 'I need your assistance.')}
+                      className="w-full bg-teal-600/10 hover:bg-teal-600/20 text-teal-400 border border-teal-500/30 py-3 rounded-xl font-bold transition-all"
+                    >
+                      Hire Service
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => onContact(service.name, 'I need your assistance.')}
-                    className="w-full bg-teal-600/10 hover:bg-teal-600/20 text-teal-400 border border-teal-500/30 py-3 rounded-xl font-bold transition-all"
-                  >
-                    Hire Service
-                  </button>
-               </div>
-             ))}
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -289,6 +438,144 @@ export const ExpatsPage: React.FC<ExpatsPageProps> = ({ onContact, notify }) => 
             <Languages className="w-6 h-6" />
          </button>
       </div>
+
+      {/* Create Service Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#1e2025] border border-[#2a2e37] rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-[#2a2e37] flex justify-between items-center sticky top-0 bg-[#1e2025] rounded-t-3xl z-10">
+              <div>
+                <h2 className="text-xl font-bold text-white">Create Service</h2>
+                <p className="text-sm text-gray-400">Offer your expertise to expats</p>
+              </div>
+              <button onClick={() => { setShowCreateModal(false); resetForm(); }} className="p-2 hover:bg-[#2a2e37] rounded-lg text-gray-400 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-5">
+              {/* Title */}
+              <div>
+                <label className="text-sm font-bold text-gray-300 mb-2 block">Service Title *</label>
+                <input
+                  type="text"
+                  value={formTitle}
+                  onChange={(e) => setFormTitle(e.target.value)}
+                  placeholder="e.g. Certified Legal Translation"
+                  className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 px-4 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-teal-500/50 transition-colors"
+                />
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="text-sm font-bold text-gray-300 mb-2 block">Category *</label>
+                <select
+                  value={formCategory}
+                  onChange={(e) => setFormCategory(e.target.value)}
+                  className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-teal-500/50 transition-colors"
+                >
+                  {SERVICE_CATEGORIES.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="text-sm font-bold text-gray-300 mb-2 block">Description *</label>
+                <textarea
+                  value={formDescription}
+                  onChange={(e) => setFormDescription(e.target.value)}
+                  placeholder="Describe what you offer, your experience, etc."
+                  rows={3}
+                  className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 px-4 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-teal-500/50 transition-colors resize-none"
+                />
+              </div>
+
+              {/* Languages */}
+              <div>
+                <label className="text-sm font-bold text-gray-300 mb-2 block">Languages Spoken</label>
+                <div className="flex flex-wrap gap-2">
+                  {LANGUAGE_OPTIONS.map(lang => (
+                    <button
+                      key={lang}
+                      onClick={() => toggleLanguage(lang)}
+                      className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all ${formLanguages.includes(lang)
+                          ? 'bg-teal-500/20 text-teal-400 border-teal-500/30'
+                          : 'bg-[#0f1117] text-gray-400 border-[#2a2e37] hover:border-gray-600'
+                        }`}
+                    >
+                      {lang}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="text-sm font-bold text-gray-300 mb-2 block">Location</label>
+                <input
+                  type="text"
+                  value={formLocation}
+                  onChange={(e) => setFormLocation(e.target.value)}
+                  placeholder="e.g. Algiers, Oran, Remote"
+                  className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 px-4 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-teal-500/50 transition-colors"
+                />
+              </div>
+
+              {/* Contact */}
+              <div>
+                <label className="text-sm font-bold text-gray-300 mb-2 block">Contact Info</label>
+                <input
+                  type="text"
+                  value={formContact}
+                  onChange={(e) => setFormContact(e.target.value)}
+                  placeholder="Phone, email, or 'Contact via app'"
+                  className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 px-4 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-teal-500/50 transition-colors"
+                />
+              </div>
+
+              {/* Pricing */}
+              <div>
+                <label className="text-sm font-bold text-gray-300 mb-2 block">Pricing</label>
+                <input
+                  type="text"
+                  value={formPricing}
+                  onChange={(e) => setFormPricing(e.target.value)}
+                  placeholder="e.g. 5,000 DZD/page, Free consultation"
+                  className="w-full bg-[#0f1117] border border-[#2a2e37] rounded-xl py-3 px-4 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-teal-500/50 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-[#2a2e37] flex gap-3">
+              <button
+                onClick={() => { setShowCreateModal(false); resetForm(); }}
+                className="flex-1 py-3 rounded-xl font-bold text-gray-400 hover:text-white bg-[#0f1117] border border-[#2a2e37] hover:border-gray-600 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateService}
+                disabled={submitting || !formTitle.trim() || !formDescription.trim()}
+                className="flex-1 py-3 rounded-xl font-bold text-white bg-teal-600 hover:bg-teal-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Service'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -299,7 +299,7 @@ const App: React.FC = () => {
           </div>
         );
       case AppView.EXPATS:
-        return <ExpatsPage onContact={handleContact} notify={notify} />;
+        return <ExpatsPage onContact={handleContact} notify={notify} currentUser={currentUser} />;
       case AppView.ADMIN_PANEL:
         return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <AdminUserManagement /> : <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
       case AppView.COMMUNITY:
