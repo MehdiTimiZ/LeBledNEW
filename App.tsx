@@ -21,6 +21,7 @@ import { DeliveryMoving } from './components/DeliveryMoving';
 import { Flexy } from './components/Flexy';
 import { Profile } from './components/Profile';
 import { ExpatsPage } from './components/ExpatsPage';
+import AdminUserManagement from './pages/AdminUserManagement';
 import { AppView, UserRole, UserProfile, CharityEvent } from './types';
 import { MessageCircle } from 'lucide-react';
 import { Toast, ToastType } from './components/Toast';
@@ -211,7 +212,7 @@ const App: React.FC = () => {
       case AppView.SELLER_DASHBOARD:
         return (currentUser?.role === 'seller' || currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <SellerDashboard onOpenCreate={() => openCreateListing()} /> : <Home notify={notify} onContact={handleContact} language={language} />;
       case AppView.ADMIN_PANEL:
-        return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <AdminPanel /> : <Home notify={notify} onContact={handleContact} language={language} />;
+        return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <AdminUserManagement /> : <Home notify={notify} onContact={handleContact} language={language} />;
       case AppView.SUBSCRIPTION:
         return <SubscriptionView />;
       case AppView.PROFILE:
@@ -245,6 +246,8 @@ const App: React.FC = () => {
         );
       case AppView.EXPATS:
         return <ExpatsPage onContact={handleContact} notify={notify} />;
+      case AppView.ADMIN_PANEL:
+        return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <AdminUserManagement /> : <Home notify={notify} onContact={handleContact} language={language} />;
       case AppView.COMMUNITY:
         return <Community />;
       case AppView.CHARITY:
