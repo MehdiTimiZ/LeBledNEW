@@ -39,6 +39,7 @@ const App: React.FC = () => {
   const [initialCategory, setInitialCategory] = useState<string>('Vehicles');
   const [language, setLanguage] = useState<'FR' | 'EN'>('FR');
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   
   // Auth State
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -251,7 +252,7 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (currentView) {
       case AppView.HOME:
-        return <Home notify={notify} onContact={handleContact} language={language} />;
+        return <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
       case AppView.CHAT:
         return currentUser ? (
           <MessagingLayout 
@@ -260,12 +261,12 @@ const App: React.FC = () => {
             initialContext={chatContext}
           />
         ) : (
-          <Home notify={notify} onContact={handleContact} language={language} />
+            <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />
         );
       case AppView.SELLER_DASHBOARD:
-        return (currentUser?.role === 'seller' || currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <SellerDashboard onOpenCreate={() => openCreateListing()} /> : <Home notify={notify} onContact={handleContact} language={language} />;
+        return (currentUser?.role === 'seller' || currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <SellerDashboard onOpenCreate={() => openCreateListing()} /> : <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
       case AppView.ADMIN_PANEL:
-        return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <AdminUserManagement /> : <Home notify={notify} onContact={handleContact} language={language} />;
+        return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <AdminUserManagement /> : <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
       case AppView.SUBSCRIPTION:
         return <SubscriptionView />;
       case AppView.PROFILE:
@@ -300,13 +301,13 @@ const App: React.FC = () => {
       case AppView.EXPATS:
         return <ExpatsPage onContact={handleContact} notify={notify} />;
       case AppView.ADMIN_PANEL:
-        return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <AdminUserManagement /> : <Home notify={notify} onContact={handleContact} language={language} />;
+        return (currentUser?.role === 'admin' || currentUser?.role === 'super_admin') ? <AdminUserManagement /> : <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
       case AppView.COMMUNITY:
         return <Community />;
       case AppView.CHARITY:
         return <Charity notify={notify} onContact={handleContact} events={charityEvents} setEvents={setCharityEvents} />;
       default:
-        return <Home notify={notify} onContact={handleContact} language={language} />;
+        return <Home notify={notify} onContact={handleContact} language={language} searchQuery={globalSearchQuery} onSearchChange={setGlobalSearchQuery} />;
     }
   };
 
@@ -365,6 +366,11 @@ const App: React.FC = () => {
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           theme={theme}
           setTheme={setTheme}
+          searchQuery={globalSearchQuery}
+          onSearchChange={(q) => {
+            setGlobalSearchQuery(q);
+            if (currentView !== AppView.HOME) setCurrentView(AppView.HOME);
+          }}
         />
         
         <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 pb-24 md:pb-8 pt-6 scroll-smooth">

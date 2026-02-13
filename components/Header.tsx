@@ -15,6 +15,8 @@ interface HeaderProps {
   onToggleSidebar?: () => void;
   theme?: 'dark' | 'light';
   setTheme?: (theme: 'dark' | 'light') => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -28,11 +30,14 @@ export const Header: React.FC<HeaderProps> = ({
   setLanguage,
   onToggleSidebar,
   theme = 'dark',
-  setTheme
+  setTheme,
+  searchQuery: externalSearchQuery = '',
+  onSearchChange
 }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [status, setStatus] = useState<'online' | 'invisible'>('online');
-  const [searchQuery, setSearchQuery] = useState('');
+  const searchQuery = externalSearchQuery;
+  const setSearchQuery = (val: string) => onSearchChange?.(val);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);

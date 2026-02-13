@@ -8,11 +8,14 @@ interface HomeProps {
   notify: (msg: string, type: 'success' | 'error' | 'info') => void;
   onContact: (recipient: string) => void;
   language: 'FR' | 'EN';
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
 }
 
-export const Home: React.FC<HomeProps> = ({ notify, onContact, language }) => {
+export const Home: React.FC<HomeProps> = ({ notify, onContact, language, searchQuery: externalSearch = '', onSearchChange }) => {
   const [activeCategory, setActiveCategory] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
+  const searchQuery = externalSearch;
+  const setSearchQuery = (val: string) => onSearchChange?.(val);
   const [selectedWilaya, setSelectedWilaya] = useState('All Locations');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
