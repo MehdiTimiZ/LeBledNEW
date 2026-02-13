@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, MessageCircle, Globe, User, ChevronDown, LayoutDashboard, CreditCard, LogOut, Settings, LogIn, ShieldAlert, Menu, Moon, Sun } from 'lucide-react';
+import { Plus, MessageCircle, Globe, User, ChevronDown, LayoutDashboard, CreditCard, LogOut, Settings, LogIn, ShieldAlert, Menu, Moon, Sun, Search, X } from 'lucide-react';
 import { AppView, UserProfile } from '../types';
 
 interface HeaderProps {
@@ -32,7 +32,10 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [status, setStatus] = useState<'online' | 'invisible'>('online');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -44,6 +47,22 @@ export const Header: React.FC<HeaderProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Keyboard shortcut: Ctrl+K to focus search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+      if (e.key === 'Escape') {
+        searchInputRef.current?.blur();
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleNav = (view: AppView) => {
     if (onChangeView) onChangeView(view);
     setIsProfileOpen(false);
@@ -51,9 +70,9 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50 h-16 shrink-0 w-full transition-colors duration-300">
-      <div className="px-4 md:px-6 h-full flex items-center justify-between">
+      <div className="px-4 md:px-6 h-full flex items-center justify-between gap-4">
         {/* Left Section: Hamburger + Brand */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 shrink-0">
           <button 
             data-sidebar-toggle="true"
             onClick={onToggleSidebar}
@@ -80,8 +99,41 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
+        {/* Center Section: Search Bar */}
+        <div className="hidden md:flex flex-1 max-w-xl mx-auto">
+          <div className={`relative w-full group transition-all duration-300 ${isSearchFocused ? 'scale-[1.02]' : ''}`}>
+            <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors duration-200 ${isSearchFocused ? 'text-indigo-400' : 'text-muted'}`} />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
+              placeholder="Search listings, sellers, services..."
+              className={`w-full bg-surface border rounded-xl pl-10 pr-20 py-2 text-sm text-mainText placeholder:text-muted/60 outline-none transition-all duration-300 ${isSearchFocused
+                  ? 'border-indigo-500/50 shadow-lg shadow-indigo-500/10 bg-surfaceAlt'
+                  : 'border-border hover:border-border/80'
+                }`}
+            />
+            {searchQuery ? (
+              <button
+                onClick={() => { setSearchQuery(''); searchInputRef.current?.focus(); }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-mainText transition-colors p-0.5"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            ) : (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
+                <kbd className="text-[10px] text-muted/50 bg-background border border-border px-1.5 py-0.5 rounded font-mono">Ctrl</kbd>
+                <kbd className="text-[10px] text-muted/50 bg-background border border-border px-1.5 py-0.5 rounded font-mono">K</kbd>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Right Actions */}
-        <div className="flex items-center space-x-2 md:space-x-4">
+        <div className="flex items-center space-x-2 md:space-x-4 shrink-0">
           <button 
             onClick={onOpenCreate}
             className="hidden md:flex items-center space-x-2 bg-surface hover:bg-surfaceAlt text-mainText px-4 py-2 rounded-full text-sm font-medium transition-colors border border-border"
