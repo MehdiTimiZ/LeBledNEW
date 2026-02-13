@@ -95,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
           {/* Role Based Section */}
           {currentUser && (
             <div className={`pt-4 border-t border-border space-y-2 ${isOpen ? 'mt-6' : 'mt-4'}`}>
-              {currentUser.role === 'admin' && (
+              {['admin', 'super_admin'].includes(currentUser.role) && (
                 <button
                   onClick={() => {
                     onChangeView(AppView.ADMIN_PANEL);
@@ -113,7 +113,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onChangeView, cur
                   {isOpen && <span className="font-medium animate-fade-in whitespace-nowrap overflow-hidden">{t.ADMIN_PANEL}</span>}
                 </button>
               )}
-              {['admin', 'seller'].includes(currentUser.role) && (
+              {['admin', 'seller', 'super_admin'].includes(currentUser.role) && (
                 <button
                   onClick={() => {
                     onChangeView(AppView.SELLER_DASHBOARD);

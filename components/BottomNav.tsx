@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, ShoppingBag, Users, MessageCircle, User } from 'lucide-react';
+import { Home, Car, MessageCircle, Users, Stethoscope } from 'lucide-react';
 import { AppView, UserProfile } from '../types';
 
 interface BottomNavProps {
@@ -9,36 +9,43 @@ interface BottomNavProps {
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({ currentView, onChangeView, currentUser }) => {
-  const items = [
+  const navItems = [
     { id: AppView.HOME, label: 'Home', icon: Home },
-    { id: AppView.VEHICLES, label: 'Market', icon: ShoppingBag }, // Market shortcut
-    { id: AppView.COMMUNITY, label: 'Club', icon: Users },
+    { id: AppView.VEHICLES, label: 'Vehicles', icon: Car },
+    { id: AppView.SERVICES, label: 'Health', icon: Stethoscope, color: 'text-green-500' },
     { id: AppView.CHAT, label: 'Chat', icon: MessageCircle },
-    { id: AppView.PROFILE, label: 'Profile', icon: User },
+    { id: AppView.COMMUNITY, label: 'Community', icon: Users },
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#13151b] border-t border-[#2a2e37] pb-safe z-50">
-      <div className="flex justify-around items-center px-2 py-2">
-        {items.map((item) => {
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/95 backdrop-blur-xl border-t border-border">
+      <div className="flex items-center justify-around px-2 py-1">
+        {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentView === item.id;
+
           return (
             <button
               key={item.id}
               onClick={() => onChangeView(item.id)}
-              className={`flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 w-full ${
-                isActive ? 'text-indigo-400' : 'text-gray-500 hover:text-gray-300'
+              className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl transition-all min-w-[56px] ${isActive
+                  ? 'text-indigo-400'
+                  : 'text-muted hover:text-mainText'
               }`}
             >
-              <div className={`p-1.5 rounded-xl mb-1 transition-all ${isActive ? 'bg-indigo-500/10' : 'bg-transparent'}`}>
-                <Icon className={`w-5 h-5 ${isActive ? 'fill-current' : ''}`} />
+              <div className="relative">
+                <Icon className={`w-5 h-5 ${isActive ? (item.color || 'text-indigo-400') : ''}`} />
+                {isActive && (
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-indigo-400" />
+                )}
               </div>
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <span className={`text-[10px] font-bold mt-1 ${isActive ? 'text-indigo-400' : 'text-muted'}`}>
+                {item.label}
+              </span>
             </button>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 };
